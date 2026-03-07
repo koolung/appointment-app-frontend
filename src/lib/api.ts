@@ -28,6 +28,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Enhanced error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      console.error('API Error Details:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        message: error.response.data?.message,
+      });
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth APIs
 export const authAPI = {
   signUp: (data: any) => api.post('/auth/sign-up', data),

@@ -18,18 +18,26 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
+      console.log('Submitting forgot password with email:', email);
+      const payload = { email };
+      console.log('Payload being sent:', JSON.stringify(payload));
+      
       // Call forgot password API endpoint
-      await authAPI.forgotPassword({ email });
+      const response = await authAPI.forgotPassword(payload);
+      console.log('Forgot password success response:', response);
+      
       setMessage('Password reset link has been sent to your email. Please check your inbox.');
       setIsSubmitted(true);
       setEmail('');
     } catch (err: any) {
-      console.error('Forgot password error:', err);
+      console.error('Forgot password error caught:', err);
+      console.error('Error response data:', err.response?.data);
+      
       const errorMsg = err.response?.data?.message || 
                        (Array.isArray(err.response?.data?.message) 
                          ? err.response.data.message.join(', ')
                          : 'Failed to send reset link. Please try again.');
-      setError(errorMsg);
+      setError(String(errorMsg));
     } finally {
       setIsLoading(false);
     }

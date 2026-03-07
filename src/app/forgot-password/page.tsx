@@ -24,7 +24,12 @@ export default function ForgotPasswordPage() {
       setIsSubmitted(true);
       setEmail('');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send reset link. Please try again.');
+      console.error('Forgot password error:', err);
+      const errorMsg = err.response?.data?.message || 
+                       (Array.isArray(err.response?.data?.message) 
+                         ? err.response.data.message.join(', ')
+                         : 'Failed to send reset link. Please try again.');
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

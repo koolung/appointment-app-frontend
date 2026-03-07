@@ -32,7 +32,7 @@ export default function LoginPage() {
       if (user?.role === 'ADMIN') {
         router.push('/admin/appointments');
       } else {
-        router.push('/dashboard');
+        router.push('/booking');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');

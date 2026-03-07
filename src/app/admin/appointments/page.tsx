@@ -510,6 +510,7 @@ export default function AppointmentsPage() {
         endTime: endTime.toISOString(),
         serviceIds: quickAddServiceIds,
         bookingSource: 'ADMIN',
+        isAdminRequest: true,
         clientFirstName: quickAddClientFirstName,
         clientLastName: quickAddClientLastName,
         clientEmail: quickAddClientEmail,

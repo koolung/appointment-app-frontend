@@ -56,6 +56,7 @@ interface Employee {
 interface Service {
   id: string;
   name: string;
+  baseDuration?: number;
 }
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -461,6 +462,19 @@ export default function AppointmentsPage() {
     setQuickAddClientPhone(client.phone || '');
     setSelectedExistingClient(client);
     setShowClientSuggestions(false);
+  };
+
+  const calculateTotalDuration = (selectedServiceIds: string[]) => {
+    if (selectedServiceIds.length === 0) {
+      return 60; // Default 60 minutes if no services
+    }
+    
+    const totalDuration = selectedServiceIds.reduce((sum, serviceId) => {
+      const service = services.find(s => s.id === serviceId);
+      return sum + (service?.baseDuration || 60); // Default 60 min per service if not specified
+    }, 0);
+    
+    return totalDuration;
   };
 
   const handleQuickAddAppointment = async () => {
@@ -1681,17 +1695,25 @@ export default function AppointmentsPage() {
                         type="checkbox"
                         checked={quickAddServiceIds.includes(service.id)}
                         onChange={(e) => {
+                          let newServiceIds: string[];
                           if (e.target.checked) {
-                            setQuickAddServiceIds([...quickAddServiceIds, service.id]);
+                            newServiceIds = [...quickAddServiceIds, service.id];
                           } else {
-                            setQuickAddServiceIds(
-                              quickAddServiceIds.filter((id) => id !== service.id)
-                            );
+                            newServiceIds = quickAddServiceIds.filter((id) => id !== service.id);
                           }
+                          setQuickAddServiceIds(newServiceIds);
+                          // Auto-calculate duration based on selected services
+                          const newDuration = calculateTotalDuration(newServiceIds);
+                          setQuickAddDuration(newDuration);
                         }}
                         className="rounded"
                       />
                       <span className="text-sm text-slate-700">{service.name}</span>
+                      {service.baseDuration && (
+                        <span className="text-xs text-slate-500 ml-auto">
+                          {service.baseDuration} min
+                        </span>
+                      )}
                     </label>
                   ))}
                 </div>
@@ -1734,160 +1756,7 @@ export default function AppointmentsPage() {
       )}
 
       <div className="space-y-6">
-        {/* Header with View Toggle */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Appointment Calendar</h1>
-            <p className="text-slate-600 mt-1">Manage all salon appointments</p>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {(viewMode === 'daily' || viewMode === 'weekly' || viewMode === 'monthly') && (
-              <select
-                value={selectedEmployeeId || ''}
-                onChange={(e) => setSelectedEmployeeId(e.target.value || null)}
-                className="px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Employees</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.user?.firstName} {emp.user?.lastName}
-                  </option>
-                ))}
-              </select>
-            )}
-            <button
-              onClick={() => setViewMode('daily')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                viewMode === 'daily'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
-              }`}
-            >
-              Daily
-            </button>
-            <button
-              onClick={() => setViewMode('weekly')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                viewMode === 'weekly'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
-              }`}
-            >
-              Weekly
-            </button>
-            <button
-              onClick={() => setViewMode('monthly')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                viewMode === 'monthly'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
-              }`}
-            >
-              List
-            </button>
-          </div>
-        </div>
 
-        {/* Filters Panel */}
-        <div className="bg-white rounded-lg border border-slate-200 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Search by Client Name/Phone */}
-            <div>
-              <label className="block text-sm font-medium text-slate-900 mb-1">
-                Search Client
-              </label>
-              <input
-                type="text"
-                placeholder="Name or phone..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
-            </div>
-
-            {/* Filter by Employee */}
-            <div>
-              <label className="block text-sm font-medium text-slate-900 mb-1">
-                Employee
-              </label>
-              <select
-                value={selectedEmployeeId || ''}
-                onChange={(e) => setSelectedEmployeeId(e.target.value || null)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Employees</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.user?.firstName} {emp.user?.lastName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Filter by Service */}
-            <div>
-              <label className="block text-sm font-medium text-slate-900 mb-1">
-                Service
-              </label>
-              <select
-                value={selectedServiceId || ''}
-                onChange={(e) => setSelectedServiceId(e.target.value || null)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Services</option>
-                {services.map((svc) => (
-                  <option key={svc.id} value={svc.id}>
-                    {svc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Filter by Status */}
-            <div>
-              <label className="block text-sm font-medium text-slate-900 mb-1">
-                Status
-              </label>
-              <select
-                value={selectedStatus || ''}
-                onChange={(e) => setSelectedStatus(e.target.value || null)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">{viewMode === 'daily' ? 'All Active Statuses' : 'All Statuses'}</option>
-                {APPOINTMENT_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {status.replace(/_/g, ' ')}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Clear Filters Button */}
-            <div className="flex items-end">
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedServiceId(null);
-                  setSelectedStatus(null);
-                  setSelectedEmployeeId(employees.length > 0 ? employees[0].id : null);
-                }}
-                className="w-full px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-lg font-medium transition-colors text-sm"
-              >
-                Clear Filters
-              </button>
-            </div>
-          </div>
-        </div>
 
         {/* Daily View */}
         {viewMode === 'daily' && (
@@ -2064,6 +1933,10 @@ export default function AppointmentsPage() {
                                   ? `${apt.client.user.firstName} ${apt.client.user.lastName}`
                                   : 'Unknown';
 
+                                const serviceNames = apt.services && apt.services.length > 0
+                                  ? apt.services.map(s => s.service?.name).filter(Boolean).join(', ')
+                                  : 'No service';
+
                                 return (
                                   <div
                                     key={apt.id}
@@ -2075,13 +1948,16 @@ export default function AppointmentsPage() {
                                       top: `${topOffset}px`,
                                       height: `${Math.max(height, 24)}px`,
                                     }}
-                                    title={clientName}
+                                    title={`${clientName}\n${serviceNames}`}
                                   >
                                     <div className="font-semibold truncate">
                                       {startTime.getHours()}:{String(startTime.getMinutes()).padStart(2, '0')}
                                     </div>
-                                    <div className="truncate text-xs opacity-80">
+                                    <div className="truncate text-xs opacity-90 font-medium">
                                       {clientName}
+                                    </div>
+                                    <div className="truncate text-xs opacity-75">
+                                      {serviceNames}
                                     </div>
                                   </div>
                                 );
@@ -2177,6 +2053,9 @@ export default function AppointmentsPage() {
                                 const clientName = apt.client?.user
                                   ? `${apt.client.user.firstName} ${apt.client.user.lastName}`
                                   : 'Unknown';
+                                const serviceNames = apt.services && apt.services.length > 0
+                                  ? apt.services.map(s => s.service?.name).filter(Boolean).join(', ')
+                                  : 'No service';
 
                                 return (
                                   <div
@@ -2187,8 +2066,12 @@ export default function AppointmentsPage() {
                                       'bg-slate-100 text-slate-800'
                                     }`}
                                   >
-                                    {startTime.getHours()}:
-                                    {String(startTime.getMinutes()).padStart(2, '0')} - {clientName}
+                                    <div className="font-medium">
+                                      {startTime.getHours()}:{String(startTime.getMinutes()).padStart(2, '0')} - {clientName}
+                                    </div>
+                                    <div className="text-xs opacity-75">
+                                      {serviceNames}
+                                    </div>
                                   </div>
                                 );
                               })}
@@ -2340,6 +2223,9 @@ export default function AppointmentsPage() {
                         const employeeName = apt.employee?.user
                           ? `${apt.employee.user.firstName} ${apt.employee.user.lastName}`
                           : 'Unassigned';
+                        const serviceNames = apt.services && apt.services.length > 0
+                          ? apt.services.map(s => s.service?.name).filter(Boolean).join(', ')
+                          : 'No service';
 
                         return (
                           <div
@@ -2352,12 +2238,15 @@ export default function AppointmentsPage() {
                               {endTime.getHours()}:
                               {String(endTime.getMinutes()).padStart(2, '0')}
                             </div>
-                            <div className="text-xs text-slate-600 mt-1">
+                            <div className="text-xs text-slate-600 mt-1 space-y-1">
                               <div>
                                 <strong>Client:</strong> {clientName}
                               </div>
                               <div>
                                 <strong>Staff:</strong> {employeeName}
+                              </div>
+                              <div>
+                                <strong>Services:</strong> {serviceNames}
                               </div>
                             </div>
                             <div className="mt-2">
@@ -2406,6 +2295,9 @@ export default function AppointmentsPage() {
                           Staff
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">
+                          Services
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">
                           Duration
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">
@@ -2428,6 +2320,9 @@ export default function AppointmentsPage() {
                           const employeeName = apt.employee?.user
                             ? `${apt.employee.user.firstName} ${apt.employee.user.lastName}`
                             : 'Unassigned';
+                          const serviceNames = apt.services && apt.services.length > 0
+                            ? apt.services.map(s => s.service?.name).filter(Boolean).join(', ')
+                            : 'No service';
                           const duration = Math.round(
                             (endTime.getTime() - startTime.getTime()) / (60 * 1000)
                           );
@@ -2448,6 +2343,7 @@ export default function AppointmentsPage() {
                               </td>
                               <td className="px-4 py-3 text-sm text-slate-900">{clientName}</td>
                               <td className="px-4 py-3 text-sm text-slate-900">{employeeName}</td>
+                              <td className="px-4 py-3 text-sm text-slate-700">{serviceNames}</td>
                               <td className="px-4 py-3 text-sm text-slate-600">{duration} min</td>
                               <td className="px-4 py-3 text-sm">
                                 <span
@@ -2468,6 +2364,161 @@ export default function AppointmentsPage() {
             </div>
           </div>
         )}
+
+                {/* Header with View Toggle */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Appointment Calendar</h1>
+            <p className="text-slate-600 mt-1">Manage all salon appointments</p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {(viewMode === 'daily' || viewMode === 'weekly' || viewMode === 'monthly') && (
+              <select
+                value={selectedEmployeeId || ''}
+                onChange={(e) => setSelectedEmployeeId(e.target.value || null)}
+                className="px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Employees</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.user?.firstName} {emp.user?.lastName}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              onClick={() => setViewMode('daily')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                viewMode === 'daily'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+              }`}
+            >
+              Daily
+            </button>
+            <button
+              onClick={() => setViewMode('weekly')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                viewMode === 'weekly'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+              }`}
+            >
+              Weekly
+            </button>
+            <button
+              onClick={() => setViewMode('monthly')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                viewMode === 'monthly'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+              }`}
+            >
+              List
+            </button>
+          </div>
+        </div>
+
+        {/* Filters Panel */}
+        <div className="bg-white rounded-lg border border-slate-200 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Search by Client Name/Phone */}
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-1">
+                Search Client
+              </label>
+              <input
+                type="text"
+                placeholder="Name or phone..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+            </div>
+
+            {/* Filter by Employee */}
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-1">
+                Employee
+              </label>
+              <select
+                value={selectedEmployeeId || ''}
+                onChange={(e) => setSelectedEmployeeId(e.target.value || null)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Employees</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.user?.firstName} {emp.user?.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter by Service */}
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-1">
+                Service
+              </label>
+              <select
+                value={selectedServiceId || ''}
+                onChange={(e) => setSelectedServiceId(e.target.value || null)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Services</option>
+                {services.map((svc) => (
+                  <option key={svc.id} value={svc.id}>
+                    {svc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter by Status */}
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-1">
+                Status
+              </label>
+              <select
+                value={selectedStatus || ''}
+                onChange={(e) => setSelectedStatus(e.target.value || null)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Statuses</option>
+                {APPOINTMENT_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status.replace(/_/g, ' ')}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Clear Filters Button */}
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedServiceId(null);
+                  setSelectedStatus(null);
+                  setSelectedEmployeeId(null);
+                }}
+                className="w-full px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-lg font-medium transition-colors text-sm"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );

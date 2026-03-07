@@ -129,9 +129,13 @@ export default function AvailabilityEditorPage() {
       const [year, month, day] = exceptionDate.split('-');
       const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       
+      // Convert JavaScript's getDay() (0=Sun) to schema convention (0=Mon)
+      const jsDay = dateObj.getDay();
+      const schemaDayOfWeek = jsDay === 0 ? 6 : jsDay - 1;
+      
       const response = await api.post('/availability', {
         employeeId,
-        dayOfWeek: dateObj.getDay(),
+        dayOfWeek: schemaDayOfWeek,
         startTime: isFullDayOff ? '00:00' : exceptionStartTime,
         endTime: isFullDayOff ? '00:00' : exceptionEndTime,
         isException: true,

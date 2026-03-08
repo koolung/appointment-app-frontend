@@ -43,6 +43,12 @@ interface InteractiveCalendarProps {
   onDateChange: (date: string) => void;
 }
 
+// Helper function to parse date strings as local dates instead of UTC
+function parseLocalDate(dateString: string): Date {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 function InteractiveCalendar({ selectedDate, onDateChange }: InteractiveCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     selectedDate ? new Date(selectedDate) : new Date()
@@ -154,7 +160,7 @@ function InteractiveCalendar({ selectedDate, onDateChange }: InteractiveCalendar
           const cellDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
           const disabled = isDateDisabled(cellDate);
           const isSelected = selectedDate && 
-            new Date(selectedDate).toDateString() === cellDate.toDateString();
+            parseLocalDate(selectedDate).toDateString() === cellDate.toDateString();
           const isToday = cellDate.toDateString() === today.toDateString();
 
           return (
@@ -476,7 +482,9 @@ const handleBooking = async () => {
   }
 
   // Validate that the selected time is not in the past
-  const startTime = new Date(`${selectedDate}T${selectedTime}`);
+  const dateObj = parseLocalDate(selectedDate);
+  const [hours, minutes] = selectedTime.split(':').map(Number);
+  const startTime = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), hours, minutes, 0);
   const now = new Date();
   if (startTime <= now) {
     alert('You cannot book appointments in the past. Please select a future date and time.');
@@ -905,7 +913,7 @@ const handleBooking = async () => {
                     ) : availableSlots.length > 0 ? (
                       <div>
                         <div className="text-sm text-gray-600 mb-4">
-                          📅 {new Date(selectedDate).toLocaleDateString('en-US', { 
+                          📅 {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                             weekday: 'long', 
                             month: 'short', 
                             day: 'numeric' 
@@ -966,7 +974,7 @@ const handleBooking = async () => {
                       <div>
                         <p className="text-gray-600 text-xs font-semibold">DATE</p>
                         <p className="text-gray-900 font-semibold">
-                          {new Date(selectedDate).toLocaleDateString('en-US', {
+                          {parseLocalDate(selectedDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric'
@@ -1062,7 +1070,7 @@ const handleBooking = async () => {
                           <div>
                             <p className="text-xs text-gray-500">Date</p>
                             <p className="font-semibold text-gray-900">
-                              {new Date(selectedDate).toLocaleDateString('en-US', {
+                              {parseLocalDate(selectedDate).toLocaleDateString('en-US', {
                                 weekday: 'short',
                                 month: 'short',
                                 day: 'numeric',
@@ -1220,7 +1228,7 @@ const handleBooking = async () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Date:</span>
                       <span className="font-semibold text-gray-900">
-                        {new Date(selectedDate).toLocaleDateString('en-US', {
+                        {parseLocalDate(selectedDate).toLocaleDateString('en-US', {
                           weekday: 'short',
                           month: 'short',
                           day: 'numeric',

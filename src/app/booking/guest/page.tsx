@@ -43,6 +43,12 @@ interface InteractiveCalendarProps {
   onDateChange: (date: string) => void;
 }
 
+// Helper function to parse date strings as local dates instead of UTC
+function parseLocalDate(dateString: string): Date {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 function InteractiveCalendar({ selectedDate, onDateChange }: InteractiveCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     selectedDate ? new Date(selectedDate) : new Date()
@@ -148,7 +154,7 @@ function InteractiveCalendar({ selectedDate, onDateChange }: InteractiveCalendar
           const cellDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
           const disabled = isDateDisabled(cellDate);
           const isSelected = selectedDate && 
-            new Date(selectedDate).toDateString() === cellDate.toDateString();
+            parseLocalDate(selectedDate).toDateString() === cellDate.toDateString();
           const isToday = cellDate.toDateString() === today.toDateString();
 
           return (
@@ -461,7 +467,9 @@ export default function GuestBookingPage() {
   };
 
   const handleBooking = async () => {
-    const startTime = new Date(`${selectedDate}T${selectedTime}`);
+    const dateObj = parseLocalDate(selectedDate);
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const startTime = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), hours, minutes, 0);
     const now = new Date();
     if (startTime <= now) {
       alert('You cannot book appointments in the past. Please select a future date and time.');
@@ -751,7 +759,7 @@ export default function GuestBookingPage() {
                     {selectedDate && (
                       <div className="flex gap-3 items-center mb-3">
                         <div className="text-sm text-gray-700 font-medium">
-                          📅 Selected: {new Date(selectedDate).toLocaleDateString('en-US', { 
+                          📅 Selected: {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                             weekday: 'short', 
                             month: 'short', 
                             day: 'numeric',
@@ -798,7 +806,7 @@ export default function GuestBookingPage() {
                       ) : availableSlots.length > 0 ? (
                         <div>
                           <div className="text-sm text-gray-600 mb-4">
-                            📅 {new Date(selectedDate).toLocaleDateString('en-US', { 
+                            📅 {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                               weekday: 'long', 
                               month: 'short', 
                               day: 'numeric' 
@@ -864,7 +872,7 @@ export default function GuestBookingPage() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm font-semibold text-blue-900 mb-3">Appointment Summary:</p>
                   <div className="space-y-1 text-sm text-blue-800">
-                    <p>📅 {new Date(selectedDate).toLocaleDateString('en-US', { 
+                    <p>📅 {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                       weekday: 'long',
                       month: 'long',
                       day: 'numeric',
@@ -1077,7 +1085,7 @@ export default function GuestBookingPage() {
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
                   <h3 className="font-bold text-gray-900 mb-4">Your Appointment</h3>
                   <div className="space-y-2 text-gray-700">
-                    <p>📅 <strong>{new Date(selectedDate).toLocaleDateString('en-US', { 
+                    <p>📅 <strong>{parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                       weekday: 'long',
                       month: 'long',
                       day: 'numeric',

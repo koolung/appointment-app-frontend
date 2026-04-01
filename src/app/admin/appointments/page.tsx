@@ -515,6 +515,7 @@ export default function AppointmentsPage() {
         clientLastName: quickAddClientLastName,
         clientEmail: quickAddClientEmail,
         clientPhone: quickAddClientPhone,
+        clientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         notes: '',
       });
 

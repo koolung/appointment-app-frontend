@@ -215,6 +215,14 @@ export default function GuestBookingPage() {
   const [isSummaryDetailExpanded, setIsSummaryDetailExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+
+  // Account creation states
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountConfirmPassword, setAccountConfirmPassword] = useState('');
+  const [accountError, setAccountError] = useState('');
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
   const [expandedService, setExpandedService] = useState<string | null>(null);
   const [expandedEmployee, setExpandedEmployee] = useState<string | null>(null);
   const [nextAvailableSlot, setNextAvailableSlot] = useState<string | null>(null);
@@ -507,6 +515,37 @@ export default function GuestBookingPage() {
       alert(error.response?.data?.message || 'Booking failed. Please try again.');
     } finally {
       setIsBooking(false);
+    }
+  };
+
+  const handleCreateAccount = async () => {
+    setAccountError('');
+
+    if (!accountPassword) {
+      setAccountError('Password is required');
+      return;
+    }
+    if (accountPassword.length < 8) {
+      setAccountError('Password must be at least 8 characters');
+      return;
+    }
+    if (accountPassword !== accountConfirmPassword) {
+      setAccountError('Passwords do not match');
+      return;
+    }
+
+    setIsCreatingAccount(true);
+    try {
+      await api.post('/auth/guest-activate', {
+        email: guestEmail,
+        password: accountPassword,
+      });
+      setAccountCreated(true);
+      setShowCreateAccount(false);
+    } catch (error: any) {
+      setAccountError(error.response?.data?.message || 'Failed to create account. Please try again.');
+    } finally {
+      setIsCreatingAccount(false);
     }
   };
 
@@ -1277,13 +1316,77 @@ export default function GuestBookingPage() {
                   >
                     Back to Home
                   </Link>
-                  <Link
-                    href="/login"
-                    className="px-8 py-3 bg-gray-200 text-gray-900 rounded-lg font-bold hover:bg-gray-300 transition-colors"
-                  >
-                    Create an Account
-                  </Link>
+                  {!accountCreated && (
+                    <button
+                      onClick={() => setShowCreateAccount(!showCreateAccount)}
+                      className="px-8 py-3 bg-gray-200 text-gray-900 rounded-lg font-bold hover:bg-gray-300 transition-colors"
+                    >
+                      Create an Account
+                    </button>
+                  )}
                 </div>
+
+                {/* Create Account Form */}
+                {showCreateAccount && !accountCreated && (
+                  <div className="bg-gray-50 border-l-4 border-[#35514e] rounded-r-lg p-6 text-left space-y-4 max-w-md mx-auto">
+                    <div>
+                      <p className="font-semibold text-[#35514e]">Set a password for {guestEmail}</p>
+                      <p className="text-sm text-gray-600 mt-1">Create a password to manage your appointments online.</p>
+                    </div>
+
+                    {accountError && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        {accountError}
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">New Password *</label>
+                      <input
+                        type="password"
+                        value={accountPassword}
+                        onChange={(e) => setAccountPassword(e.target.value)}
+                        placeholder="Minimum 8 characters"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#35514e] text-gray-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password *</label>
+                      <input
+                        type="password"
+                        value={accountConfirmPassword}
+                        onChange={(e) => setAccountConfirmPassword(e.target.value)}
+                        placeholder="Re-enter your password"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#35514e] text-gray-900"
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleCreateAccount}
+                      disabled={isCreatingAccount}
+                      className="w-full py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-[#2a413e] disabled:bg-gray-400 transition-colors"
+                    >
+                      {isCreatingAccount ? 'Creating Account...' : 'Create Account'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Account Created Confirmation */}
+                {accountCreated && (
+                  <div className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-6 text-left max-w-md mx-auto">
+                    <p className="font-semibold text-green-800">Account created successfully!</p>
+                    <p className="text-sm text-green-700 mt-1">
+                      A confirmation email has been sent to <strong>{guestEmail}</strong>. You can now sign in to manage your appointments.
+                    </p>
+                    <Link
+                      href="/login"
+                      className="inline-block mt-3 px-6 py-2 bg-[#35514e] text-white rounded-lg font-bold hover:bg-[#2a413e] transition-colors text-sm"
+                    >
+                      Sign In Now
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>

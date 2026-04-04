@@ -176,8 +176,8 @@ function InteractiveCalendar({ selectedDate, onDateChange }: InteractiveCalendar
                   : isSelected
                   ? 'bg-[#35514e] text-white font-bold shadow-md'
                   : isToday
-                  ? 'bg-purple-100 text-purple-900 border-2 border-purple-400'
-                  : 'text-gray-700 bg-white hover:bg-purple-50 border border-gray-200'
+                  ? 'bg-[#e0d7f3] text-[#4b2995] border-2 border-[#4b2995]'
+                  : 'text-gray-700 bg-white hover:bg-[#f3e8ff] border border-gray-200'
                 }
               `}
             >
@@ -211,6 +211,11 @@ export default function BookingPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // UI states
+  const [isCategoryNavOpen, setIsCategoryNavOpen] = useState(false);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [isPolicyExpanded, setIsPolicyExpanded] = useState(false);
+  const [isServicesReminderExpanded, setIsServicesReminderExpanded] = useState(false);
+  const [isSummaryDetailExpanded, setIsSummaryDetailExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [expandedService, setExpandedService] = useState<string | null>(null);
@@ -469,6 +474,24 @@ export default function BookingPage() {
     );
   };
 
+  const getServiceCategories = () => {
+    const categories = [...new Set(services.map(s => s.category?.name).filter(Boolean))];
+    return categories.sort() as string[];
+  };
+
+  const getServicesByCategory = (category: string | null) => {
+    if (!category) return [];
+    return services.filter(s => s.category?.name === category);
+  };
+
+  const handleContinueFromServices = () => {
+    if (selectedServices.length === 0) {
+      alert('Please select at least one service');
+      return;
+    }
+    setStep(1);
+  };
+
 
 const handleBooking = async () => {
   if (!selectedServices.length || selectedEmployee === undefined || !selectedDate || !selectedTime) {
@@ -531,185 +554,240 @@ const handleBooking = async () => {
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8">
+          <div className="bg-white text-gray-900 p-8 border-t-xl">
             <h1 className="text-4xl font-bold mb-2">Book an Appointment</h1>
-            <p className="text-purple-100">Choose your services and preferred time</p>
+            <p className="text-gray-600">Choose your services and preferred time</p>
           </div>
 
           {/* Booking Warning Message */}
           {bookingWarningMessage && (
-            <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mx-8 mt-6">
-              <div className="flex gap-3">
-                <span className="text-amber-600 text-xl">⚠️</span>
-                <p className="text-amber-900 text-sm">{bookingWarningMessage}</p>
+            <div className="bg-gray-50 border-l-4 border-[#35514e] mx-8 md:mt-6">
+              {/* Mobile: collapsible */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => setIsPolicyExpanded(!isPolicyExpanded)}
+                  className="w-full flex items-center justify-between p-4 text-left"
+                >
+                  <span className="font-semibold text-[#35514e] text-sm">Cancellation Policy</span>
+                  <svg
+                    className={`w-4 h-4 text-[#35514e] transition-transform duration-300 ${isPolicyExpanded ? 'rotate-180' : 'rotate-0'}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPolicyExpanded ? 'max-h-40' : 'max-h-0'}`}>
+                  <p className="px-4 pb-4 text-sm text-[#35514e]">{bookingWarningMessage}</p>
+                </div>
+              </div>
+              {/* Desktop: always visible */}
+              <div className="hidden md:block p-4">
+                <p className="font-semibold text-[#35514e]">{bookingWarningMessage}</p>
               </div>
             </div>
           )}
 
-          {/* Step Indicator */}
-          {step < 3 && (
-            <div className="flex justify-between px-8 py-6 bg-slate-50 border-b">
-              {['Services', 'Details', 'Review'].map((label, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+          {/* Progress Indicator */}
+          <div className="px-8 pt-8 pb-4">
+            <div className="flex justify-between items-center">
+              {['Services', 'Date & Time', 'Review', 'Success'].map((label, idx) => (
+                <div key={idx} className="flex items-center flex-1">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                      idx <= step
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                      step >= idx
                         ? 'bg-[#35514e] text-white'
-                        : 'bg-slate-300 text-slate-600'
+                        : 'bg-gray-300 text-gray-600'
                     }`}
                   >
                     {idx + 1}
                   </div>
-                  <span className={idx <= step ? 'text-purple-600 font-semibold' : 'text-slate-600'}>
-                    {label}
-                  </span>
-                  {idx < 2 && (
-                    <div className={`h-1 w-12 ml-2 ${idx < step ? 'bg-[#35514e]' : 'bg-slate-300'}`} />
+                  {idx < 3 && (
+                    <div
+                      className={`flex-1 h-1 mx-2 ${
+                        step > idx ? 'bg-[#35514e]' : 'bg-gray-300'
+                      }`}
+                    />
                   )}
                 </div>
               ))}
             </div>
-          )}
+          </div>
 
-          <div className="p-8">
+          <div className="px-8 pb-8 space-y-6">
             {/* Step 0: Service Selection */}
             {step === 0 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Step 1: Select Services</h2>
-                  <p className="text-gray-600 mb-6">Choose one or more services for your appointment</p>
+                  <p className="text-gray-600 mb-6">Choose the services and scroll down</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-96">
-                  {/* Categories Sidebar */}
+                {/* Service Categories Sidebar */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {/* Categories */}
                   <div className="md:col-span-1">
-                    <div className="sticky top-4 space-y-2">
-                      {Object.keys(getCategorizedServices()).map((categoryName) => (
+                    <div className="sticky top-4 grid grid-cols-3 md:grid-cols-1 gap-1.5 md:gap-2">
+                      {getServiceCategories().map((category: string) => (
                         <button
-                          key={categoryName}
-                          onClick={() => setSelectedCategory(categoryName)}
-                          className={`w-full text-left px-4 border-2 border-[#fdb5ff] py-3 rounded-lg font-medium transition-all ${
-                            selectedCategory === categoryName
-                              ? 'bg-[#35514e] text-white shadow-lg'
+                          key={category}
+                          onClick={() => setSelectedCategory(category)}
+                          className={`w-full text-left px-2.5 py-2 md:px-4 md:py-3 rounded-lg transition-colors font-medium text-xs md:text-sm ${
+                            selectedCategory === category
+                              ? 'bg-[#35514e] text-white'
                               : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                           }`}
                         >
-                          <div className="flex justify-between items-center">
-                            <span>{categoryName}</span>
-                            <span className={`text-sm font-semibold ${
-                              selectedCategory === categoryName ? 'text-purple-100' : 'text-gray-600'
-                            }`}>
-                              {getCategorizedServices()[categoryName].length}
-                            </span>
-                          </div>
+                          {category}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Services Grid */}
-                  <div className="md:col-span-2">
-                    {selectedCategory && (
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">{selectedCategory}</h3>
-                        <div className="grid grid-cols-1 gap-4">
-                          {getServicesForCategory(selectedCategory).map((service) => (
-                            <div
-                              key={service.id}
-                              onClick={() => toggleService(service.id)}
-                              className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                selectedServices.includes(service.id)
-                                  ? 'border-purple-600 bg-purple-50'
-                                  : 'border-gray-200 hover:border-purple-300'
-                              }`}
-                            >
-                              {/* Checkbox */}
-                              <div className="flex items-start gap-3">
-                                <div
-                                  className={`w-6 h-6 rounded border-2 flex items-center justify-center mt-0 flex-shrink-0 ${
-                                    selectedServices.includes(service.id)
-                                      ? 'bg-[#35514e] border-purple-600'
-                                      : 'border-gray-300'
-                                  }`}
-                                >
-                                  {selectedServices.includes(service.id) && (
-                                    <span className="text-white text-sm">✓</span>
-                                  )}
-                                </div>
-                                <div className="flex-1">
-                                  <h3 className="font-bold text-sm text-gray-900">{service.name}</h3>
-                                </div>
-                              </div>
-
-                              {/* Service Quick Info */}
-                              <div className="mt-2 pl-9 space-y-1">
-                                <div className="flex justify-between items-center text-xs">
-                                  <span className="text-gray-600">Duration:</span>
-                                  <span className="font-semibold text-gray-900">{service.baseDuration} min</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                  <span className="text-gray-600">Price:</span>
-                                  <span className="font-bold text-purple-600">${service.price.toFixed(2)}</span>
-                                </div>
-                              </div>
-
-                              {/* Description Toggle */}
+                  {/* Services */}
+                  <div className="md:col-span-3">
+                    <div className="grid grid-cols-1 gap-3">
+                      {getServicesByCategory(selectedCategory).map((service) => (
+                        <div
+                          key={service.id}
+                          onClick={() => toggleService(service.id)}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            selectedServices.includes(service.id)
+                              ? 'border-[#35514e] bg-[#e0f2f1]'
+                              : 'border-gray-200 hover:border-[#35514e]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="font-bold text-gray-900">{service.name}</p>
                               {service.description && (
-                                <div className="mt-1 pl-9">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setExpandedService(
-                                        expandedService === service.id ? null : service.id
-                                      );
-                                    }}
-                                    className="text-xs text-purple-600 hover:text-purple-700 font-medium"
-                                  >
-                                    {expandedService === service.id ? '▼ Hide' : '▶ View'} Details
-                                  </button>
-                                  {expandedService === service.id && (
-                                    <p className="mt-1 text-xs text-gray-600 leading-relaxed">
-                                      {service.description}
-                                    </p>
-                                  )}
-                                </div>
+                                <p className="text-sm text-gray-600 mt-1">{service.description}</p>
                               )}
+                              <p className="text-xs text-gray-500 mt-2 px-2 py-1 border-2 border-[#e5e7eb] rounded-2xl inline-flex items-center gap-1">
+                                <i className="fi fi-rr-clock"></i> {service.baseDuration} minutes
+                              </p>
+                            </div>
+                            <div className="text-right ml-4">
+                              <p className="font-bold text-[#35514e]">${service.price.toFixed(2)}</p>
+                              {selectedServices.includes(service.id) && (
+                                <p className="text-[#35514e] text-lg">✓</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Summary and Continue Button - Sticky Bottom Bar */}
+                {selectedServices.length > 0 && (
+                  <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+                    <div className="max-w-4xl mx-auto">
+                      {/* Collapsible service list */}
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          isSummaryExpanded ? 'max-h-60' : 'max-h-0'
+                        }`}
+                      >
+                        <div className="px-4 pt-3 pb-1 space-y-1.5 max-h-52 overflow-y-auto">
+                          {getSelectedServicesDetails().map((service) => (
+                            <div key={service.id} className="flex items-center justify-between text-sm">
+                              <span className="text-gray-700">{service.name} ({service.baseDuration} min)</span>
+                              <span className="font-semibold text-gray-900">${service.price.toFixed(2)}</span>
                             </div>
                           ))}
                         </div>
                       </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Selected Services Summary */}
-                {selectedServices.length > 0 && (
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <h3 className="font-bold text-gray-900 mb-2">Selected Services</h3>
-                    {getSelectedServicesDetails().map((service) => (
-                      <div key={service.id} className="flex justify-between text-sm text-gray-700 mb-1">
-                        <span>{service.name}</span>
-                        <span>${service.price.toFixed(2)}</span>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <button
+                              onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                              className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+                            >
+                              <svg
+                                className={`w-4 h-4 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} • {getTotalDuration()} min • ${getTotalPrice().toFixed(2)}
+                            </button>
+                            <p className="text-xs text-gray-500 truncate ml-5.5">
+                              {getSelectedServicesDetails().map(s => s.name).join(', ')}
+                            </p>
+                          </div>
+                          <button
+                            onClick={handleContinueFromServices}
+                            className="shrink-0 px-6 py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
+                          >
+                            Continue
+                          </button>
+                        </div>
                       </div>
-                    ))}
-                    <div className="border-t border-purple-200 mt-2 pt-2 flex justify-between font-bold text-gray-900">
-                      <span>Total:</span>
-                      <span className="text-purple-600 text-lg">${getTotalPrice().toFixed(2)}</span>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-2">
-                      Total Duration: {getTotalDuration()} minutes
                     </div>
                   </div>
                 )}
 
-                {/* Next Button */}
-                <button
-                  onClick={() => setStep(1)}
-                  disabled={selectedServices.length === 0}
-                  className="w-full bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  Continue to Details
-                </button>
+                {/* Mobile Floating Category Nav Panel */}
+                <div className="md:hidden">
+                  {/* Backdrop */}
+                  {isCategoryNavOpen && (
+                    <div
+                      className="fixed inset-0 bg-black/20 z-40"
+                      onClick={() => setIsCategoryNavOpen(false)}
+                    />
+                  )}
+
+                  <div
+                    className={`fixed top-1/2 -translate-y-1/2 right-0 z-50 transition-transform duration-300 ease-in-out ${
+                      isCategoryNavOpen ? 'translate-x-0' : 'translate-x-[calc(100%-28px)]'
+                    }`}
+                  >
+                    <div className="flex items-stretch">
+                      {/* Tab handle */}
+                      <button
+                        onClick={() => setIsCategoryNavOpen(!isCategoryNavOpen)}
+                        className="w-7 bg-[#35514e] text-white flex items-center justify-center shadow-lg shrink-0 py-3"
+                      >
+                        <span className="text-[14px] uppercase font-medium tracking-wide" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                          Categories
+                        </span>
+                      </button>
+
+                      {/* Panel content */}
+                      <div className="bg-white border border-r-0 border-gray-200 rounded-l-lg shadow-xl p-3 w-48">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categories</p>
+                        <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
+                          {getServiceCategories().map((category: string) => (
+                            <button
+                              key={category}
+                              onClick={() => {
+                                setSelectedCategory(category);
+                                setIsCategoryNavOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-md transition-colors text-xs font-medium ${
+                                selectedCategory === category
+                                  ? 'bg-[#35514e] text-white'
+                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100'
+                              }`}
+                            >
+                              {category}
+                              <span className="ml-1 opacity-70">
+                                ({getServicesByCategory(category).length})
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -722,41 +800,72 @@ const handleBooking = async () => {
                 </div>
 
                 {/* Selected Services Reminder */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-blue-900 mb-2">Services Selected:</p>
-                  <div className="space-y-1">
-                    {getSelectedServicesDetails().map((service) => (
-                      <p key={service.id} className="text-sm text-blue-800">
-                        • {service.name} ({service.baseDuration} mins) - ${service.price.toFixed(2)}
-                      </p>
-                    ))}
+                <div className="bg-gray-50 border-l-4 border-[#35514e]">
+                  {/* Mobile: collapsible */}
+                  <div className="md:hidden">
+                    <button
+                      onClick={() => setIsServicesReminderExpanded(!isServicesReminderExpanded)}
+                      className="w-full flex items-center justify-between p-4 text-left"
+                    >
+                      <span className="font-semibold text-[#35514e] text-sm">
+                        Services Selected ({selectedServices.length}) • ${getTotalPrice().toFixed(2)}
+                      </span>
+                      <svg
+                        className={`w-4 h-4 text-[#35514e] transition-transform duration-300 ${isServicesReminderExpanded ? 'rotate-180' : 'rotate-0'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isServicesReminderExpanded ? 'max-h-60' : 'max-h-0'}`}>
+                      <div className="px-4 pb-4 space-y-1">
+                        {getSelectedServicesDetails().map((service) => (
+                          <p key={service.id} className="text-sm text-[#35514e]">
+                            • {service.name} ({service.baseDuration} mins) - ${service.price.toFixed(2)}
+                          </p>
+                        ))}
+                        <p className="text-sm font-semibold text-[#35514e] mt-2">
+                          Total: {getTotalDuration()} minutes
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-blue-900 mt-2">
-                    Total: {getTotalDuration()} minutes
-                  </p>
+                  {/* Desktop: always visible */}
+                  <div className="hidden md:block p-4">
+                    <p className="font-semibold text-[#35514e] mb-2">Services Selected:</p>
+                    <div className="space-y-1">
+                      {getSelectedServicesDetails().map((service) => (
+                        <p key={service.id} className="text-sm text-[#35514e]">
+                          • {service.name} ({service.baseDuration} mins) - ${service.price.toFixed(2)}
+                        </p>
+                      ))}
+                    </div>
+                    <p className="font-semibold text-[#35514e] mt-2">
+                      Total: {getTotalDuration()} minutes
+                    </p>
+                  </div>
                 </div>
 
                 {/* Employee Selection */}
                 <div>
                   <label className="block text-gray-900 font-bold mb-3">Select Stylist</label>
                   <div className="space-y-3">
-                    {/* No Preference Option */}
                     <button
                       onClick={() => setSelectedEmployee(null)}
-                      className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
+                      className={`w-full p-2.5 md:p-4 rounded-lg border-2 text-left transition-colors ${
                         selectedEmployee === null
-                          ? 'border-purple-600 bg-purple-50'
-                          : 'border-gray-200 hover:border-purple-300'
+                          ? 'border-[#35514e] bg-transparent'
+                          : 'border-gray-200 hover:border-[#35514e]'
                       }`}
                     >
-                      <p className="font-bold text-gray-900">🎯 No Preference</p>
-                      <p className="text-sm text-gray-600 mt-1">Any available stylist</p>
+                      <p className="font-bold text-xs md:text-base text-gray-900">No Preference</p>
+                      <p className="text-xs md:text-sm text-gray-600 mt-0.5 md:mt-1">Any available stylist</p>
                     </button>
 
-                    {/* Individual Employee Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 md:grid-cols-2 gap-2 md:gap-3">
                       {employees.filter(emp => emp.isActive !== false).map((emp) => {
-                        const specialties = getEmployeeSpecialties(emp.id);
                         const canProvide = canEmployeeProvidServices(emp.id);
                         const availCount = employeeAvailabilityCount[emp.id] || 0;
 
@@ -764,25 +873,24 @@ const handleBooking = async () => {
                           <div
                             key={emp.id}
                             onClick={() => canProvide && setSelectedEmployee(emp.id)}
-                            className={`p-4 rounded-lg border-2 transition-all ${
+                            className={`p-2 md:p-4 rounded-lg border-2 transition-all ${
                               !canProvide
                                 ? 'border-gray-300 bg-gray-100 cursor-not-allowed opacity-60'
                                 : selectedEmployee === emp.id
-                                ? 'border-purple-600 bg-purple-50 cursor-pointer'
-                                : 'border-gray-200 hover:border-purple-300 cursor-pointer'
+                                ? 'border-[#35514e] bg-transparent cursor-pointer'
+                                : 'border-gray-200 hover:border-[#35514e] cursor-pointer'
                             }`}
                           >
-                            {/* Name and Availability Badge */}
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex flex-col md:flex-row justify-between items-start mb-1 md:mb-2">
                               <div>
-                                <p className={`font-bold ${!canProvide ? 'text-gray-500' : 'text-gray-900'}`}>
+                                <p className={`font-bold text-xs md:text-base ${!canProvide ? 'text-gray-500' : 'text-gray-900'}`}>
                                   {emp.user?.firstName} {emp.user?.lastName}
                                 </p>
                               </div>
                               {selectedDate && (
-                                <div className={`text-xs font-semibold px-2 py-1 rounded ${
+                                <div className={`text-[10px] md:text-xs font-semibold px-1.5 py-0.5 md:px-2 md:py-1 rounded mt-1 md:mt-0 ${
                                   availCount > 0
-                                    ? 'bg-green-100 text-green-700'
+                                    ? 'bg-gray-100 text-green-700'
                                     : 'bg-red-100 text-red-700'
                                 }`}>
                                   {availCount} slots
@@ -790,52 +898,10 @@ const handleBooking = async () => {
                               )}
                             </div>
 
-                            {/* Service Compatibility Warning */}
                             {selectedServices.length > 0 && !canProvide && (
-                              <p className="text-xs text-gray-600 font-semibold mb-2">
-                                ⚠️ Doesn't offer one or more selected services
+                              <p className="text-[10px] md:text-xs text-gray-600 font-semibold mb-1 md:mb-2">
+                                ⚠️ N/A
                               </p>
-                            )}
-
-                            {/* Specialties */}
-                            {specialties.length > 0 && (
-                              <div className="mt-3 text-sm">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setExpandedEmployee(
-                                      expandedEmployee === emp.id ? null : emp.id
-                                    );
-                                  }}
-                                  disabled={!canProvide}
-                                  className={`font-medium ${
-                                    !canProvide
-                                      ? 'text-gray-400 cursor-not-allowed'
-                                      : 'text-purple-600 hover:text-purple-700'
-                                  }`}
-                                >
-                                  {expandedEmployee === emp.id ? '▼' : '▶'} Specialties
-                                </button>
-                                {expandedEmployee === emp.id && (
-                                  <div className="mt-2 space-y-1">
-                                    {specialties.map((service) => (
-                                      <p
-                                        key={service.id}
-                                        className={`text-xs ${
-                                          selectedServices.includes(service.id)
-                                            ? 'text-purple-700 font-semibold'
-                                            : canProvide
-                                            ? 'text-gray-600'
-                                            : 'text-gray-400'
-                                        }`}
-                                      >
-                                        • {service.name}
-                                        {selectedServices.includes(service.id) && ' ✓'}
-                                      </p>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
                             )}
                           </div>
                         );
@@ -849,8 +915,6 @@ const handleBooking = async () => {
                   {/* Date Selection */}
                   <div>
                     <label className="block text-gray-900 font-bold mb-3">Select Date</label>
-                    
-                    {/* Interactive Calendar */}
                     <div className="bg-white border border-gray-300 rounded-lg p-4 mb-4">
                       <InteractiveCalendar 
                         selectedDate={selectedDate}
@@ -862,11 +926,10 @@ const handleBooking = async () => {
                       />
                     </div>
 
-                    {/* Selected Date Info */}
                     {selectedDate && (
                       <div className="flex gap-3 items-center mb-3">
                         <div className="text-sm text-gray-700 font-medium">
-                          📅 Selected: {new Date(selectedDate).toLocaleDateString('en-US', { 
+                          Selected: {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                             weekday: 'short', 
                             month: 'short', 
                             day: 'numeric',
@@ -875,150 +938,95 @@ const handleBooking = async () => {
                         </div>
                         <div className="text-xs text-gray-600 bg-gray-50 px-3 py-1 rounded-lg font-medium">
                           {selectedEmployee === null
-                            ? `${availableSlots.length} merged slots`
+                            ? `${availableSlots.length} slots`
                             : `${employeeAvailabilityCount[selectedEmployee] ?? 0} slots`
                           }
                         </div>
                       </div>
                     )}
                     
-                    <p className="text-xs text-gray-500 mt-2">📅 Select a date at least 1 day in advance. You can book up to 60 days ahead.</p>
+                    <p className="text-xs text-gray-500 mt-2">Select a date at least 1 day in advance. <br></br>You can book up to 60 days ahead.</p>
                   </div>
 
                   {/* Time Selection */}
                   {selectedDate && (
                     <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="block text-gray-900 font-bold">Select Time</label>
-                      {nextAvailableSlot && (
-                        <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">
-                          ✓ Next available: {new Date(nextAvailableSlot).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true,
-                          })}
-                        </span>
-                      )}
-                    </div>
-
-                    {isLoading ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-600 mb-2">⏳ Loading available times...</p>
-                        <div className="flex justify-center gap-1">
-                          <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                        </div>
-                      </div>
-                    ) : availableSlots.length > 0 ? (
-                      <div>
-                        <div className="text-sm text-gray-600 mb-4">
-                          📅 {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            month: 'short', 
-                            day: 'numeric' 
-                          })} • 15-minute slots • {userTimezone} timezone
-                        </div>
-                        <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                          {availableSlots.map((slot: any, idx: number) => {
-                            const timeStr = new Date(slot.start).toLocaleTimeString('en-US', {
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="block text-gray-900 font-bold">Select Time</label>
+                        {nextAvailableSlot && (
+                          <span className="text-xs bg-gray-100 text-green-700 px-3 py-1 rounded-full font-semibold">
+                            Next available: {new Date(nextAvailableSlot).toLocaleTimeString('en-US', {
                               hour: '2-digit',
                               minute: '2-digit',
-                              hour12: false,
-                            });
-                            const isSelected = selectedTime === timeStr;
-                            const isNextAvail = slot.isNextAvailable;
-                            const isPastSlot = new Date(slot.start) <= new Date();
+                              hour12: true,
+                            })}
+                          </span>
+                        )}
+                      </div>
 
-                            return (
-                              <button
-                                key={idx}
-                                onClick={() => !isPastSlot && setSelectedTime(timeStr)}
-                                disabled={isPastSlot}
-                                className={`p-2 rounded-lg border-2 font-semibold transition-all text-sm ${
-                                  isPastSlot
-                                    ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                    : isSelected
-                                    ? 'border-purple-600 bg-[#35514e] text-white shadow-lg'
-                                    : isNextAvail
-                                    ? 'border-green-500 bg-green-50 text-gray-900 hover:bg-green-100'
-                                    : 'border-gray-300 hover:border-purple-500 text-gray-900'
-                                }`}
-                                title={isPastSlot ? 'This time has already passed' : isNextAvail ? 'Next available slot' : undefined}
-                              >
-                                {isNextAvail && !isPastSlot && <span className="block text-xs">⭐</span>}
-                                {timeStr}
-                              </button>
-                            );
-                          })}
+                      {isLoading ? (
+                        <div className="text-center py-8">
+                          <p className="text-gray-600 mb-2">Loading available times...</p>
+                          <div className="flex justify-center gap-1">
+                            <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                            <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <p className="text-red-700 font-semibold">❌ No available times for this date</p>
-                        <p className="text-red-600 text-sm mt-1">
-                          Total duration required: {getTotalDuration()} minutes
-                        </p>
-                        <p className="text-red-600 text-sm">Try selecting a different date or employee.</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                </div>
+                      ) : availableSlots.length > 0 ? (
+                        <div>
+                          <div className="text-xs text-gray-600 mb-4">
+                            {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                              weekday: 'long', 
+                              month: 'short', 
+                              day: 'numeric' 
+                            })} • 15-minute slots • {userTimezone} timezone
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {availableSlots.map((slot: any, idx: number) => {
+                              const timeStr = new Date(slot.start).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                              });
+                              const isSelected = selectedTime === timeStr;
 
-                {/* Appointment Summary Card */}
-                {selectedDate && selectedTime && (
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4 sticky bottom-0">
-                    <h3 className="font-bold text-gray-900 mb-3">📋 Your Appointment</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                      <div>
-                        <p className="text-gray-600 text-xs font-semibold">DATE</p>
-                        <p className="text-gray-900 font-semibold">
-                          {parseLocalDate(selectedDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 text-xs font-semibold">TIME</p>
-                        <p className="text-gray-900 font-semibold">
-                          {new Date(`${selectedDate}T${selectedTime}`).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 text-xs font-semibold">DURATION</p>
-                        <p className="text-gray-900 font-semibold">{getTotalDuration()} min</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 text-xs font-semibold">TIMEZONE</p>
-                        <p className="text-gray-900 font-semibold text-xs">{userTimezone}</p>
-                      </div>
+                              return (
+                                <button
+                                  key={idx}
+                                  onClick={() => setSelectedTime(timeStr)}
+                                  className={`p-2 rounded-lg font-medium text-sm transition-all border ${
+                                    isSelected
+                                      ? 'border-purple-600 bg-[#35514e] text-white shadow-lg'
+                                      : 'border-gray-300 bg-white hover:border-purple-500 text-gray-900'
+                                  }`}
+                                >
+                                  {timeStr}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <p className="text-red-700 font-semibold">❌ No available times for this date</p>
+                          <p className="text-red-600 text-sm mt-1">
+                            Total duration required: {getTotalDuration()} minutes
+                          </p>
+                          <p className="text-red-600 text-sm">Try selecting a different date or employee.</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-
-                {/* Navigation Buttons */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setStep(0)}
-                    className="flex-1 bg-gray-300 text-gray-900 font-bold py-3 rounded-lg hover:bg-gray-400 transition-colors"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={() => setStep(2)}
-                    disabled={!selectedDate || !selectedTime}
-                    className="flex-1 bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Review Booking
-                  </button>
+                  )}
                 </div>
+
+                <button
+                  onClick={() => setStep(2)}
+                  disabled={!selectedTime}
+                  className="w-full py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  Review Booking
+                </button>
               </div>
             )}
 
@@ -1031,67 +1039,56 @@ const handleBooking = async () => {
                 </div>
 
                 {/* Main Appointment Summary */}
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Appointment Summary</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Services & Price */}
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs font-semibold text-gray-600 uppercase mb-2">Services</p>
-                        <div className="space-y-2">
-                          {getSelectedServicesDetails().map((service) => (
-                            <div key={service.id} className="flex justify-between items-center bg-white rounded p-2">
-                              <span className="text-sm font-medium text-gray-900">{service.name}</span>
-                              <span className="text-sm font-semibold text-purple-600">${service.price.toFixed(2)}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="border-t border-purple-200 mt-3 pt-3 flex justify-between items-center">
-                          <span className="font-bold text-gray-900">Total Price</span>
-                          <span className="text-lg font-bold text-purple-600">${getTotalPrice().toFixed(2)}</span>
-                        </div>
+                <div className="bg-gray-50 border-l-4 border-[#35514e]">
+                  {/* Mobile: collapsible */}
+                  <div className="md:hidden">
+                    <button
+                      onClick={() => setIsSummaryDetailExpanded(!isSummaryDetailExpanded)}
+                      className="w-full flex items-center justify-between p-4 text-left"
+                    >
+                      <span className="font-semibold text-[#35514e] text-sm">Appointment Summary</span>
+                      <svg
+                        className={`w-4 h-4 text-[#35514e] transition-transform duration-300 ${isSummaryDetailExpanded ? 'rotate-180' : 'rotate-0'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryDetailExpanded ? 'max-h-96' : 'max-h-0'}`}>
+                      <div className="px-4 pb-4 space-y-1 text-sm text-[#35514e]">
+                        {getSelectedServicesDetails().map((service) => (
+                          <p key={service.id}>• {service.name} - ${service.price.toFixed(2)}</p>
+                        ))}
+                        <p className="font-semibold mt-2">Total: ${getTotalPrice().toFixed(2)}</p>
+                        <p className="mt-2">{parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                          weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+                        })}</p>
+                        <p>{selectedTime}</p>
+                        <p><i className="fi fi-rs-user"></i> {selectedEmployee === null ? 'Any Available Stylist' : 
+                          employees.find(e => e.id === selectedEmployee)?.user?.firstName + ' ' + 
+                          employees.find(e => e.id === selectedEmployee)?.user?.lastName}</p>
+                        <p><i className="fi fi-rr-clock"></i> {getTotalDuration()} minutes</p>
                       </div>
                     </div>
-
-                    {/* Appointment Details */}
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs font-semibold text-gray-600 uppercase mb-2">Appointment Details</p>
-                        <div className="bg-white rounded space-y-2 p-3">
-                          <div>
-                            <p className="text-xs text-gray-500">Stylist</p>
-                            <p className="font-semibold text-gray-900">
-                              {selectedEmployee === null
-                                ? '🎯 No Preference (Any Available)'
-                                : `${employees.find((e) => e.id === selectedEmployee)?.user?.firstName} ${employees.find((e) => e.id === selectedEmployee)?.user?.lastName}`}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Date</p>
-                            <p className="font-semibold text-gray-900">
-                              {parseLocalDate(selectedDate).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Time</p>
-                            <p className="font-semibold text-gray-900">{selectedTime}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Duration</p>
-                            <p className="font-semibold text-gray-900">{getTotalDuration()} minutes</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Timezone</p>
-                            <p className="font-semibold text-gray-900">{userTimezone}</p>
-                          </div>
-                        </div>
-                      </div>
+                  </div>
+                  {/* Desktop: always visible */}
+                  <div className="hidden md:block p-4">
+                    <p className="font-semibold text-[#35514e] mb-3">Appointment Summary:</p>
+                    <div className="space-y-1 text-sm text-[#35514e]">
+                      {getSelectedServicesDetails().map((service) => (
+                        <p key={service.id}>• {service.name} - ${service.price.toFixed(2)}</p>
+                      ))}
+                      <p className="font-semibold mt-2">Total: ${getTotalPrice().toFixed(2)}</p>
+                      <p className="mt-2">{parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+                      })}</p>
+                      <p>{selectedTime}</p>
+                      <p><i className="fi fi-rs-user"></i> {selectedEmployee === null ? 'Any Available Stylist' : 
+                        employees.find(e => e.id === selectedEmployee)?.user?.firstName + ' ' + 
+                        employees.find(e => e.id === selectedEmployee)?.user?.lastName}</p>
+                      <p><i className="fi fi-rr-clock"></i> {getTotalDuration()} minutes</p>
                     </div>
                   </div>
                 </div>
@@ -1159,20 +1156,20 @@ const handleBooking = async () => {
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex gap-3">
+                <div className="flex gap-3 w-full">
                   <button
                     onClick={() => {
                       setStep(1);
                       setConsentToPolicies(false);
                     }}
-                    className="flex-1 bg-gray-300 text-gray-900 font-bold py-3 rounded-lg hover:bg-gray-400 transition-colors"
+                    className="w-[30%] bg-gray-300 text-gray-900 font-bold py-3 rounded-lg hover:bg-gray-400 transition-colors"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleBooking}
                     disabled={isBooking || !consentToPolicies}
-                    className="flex-1 bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="w-[70%] bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                   >
                     {isBooking ? '⏳ Confirming...' : '✓ Confirm & Book'}
                   </button>
@@ -1190,94 +1187,51 @@ const handleBooking = async () => {
 
             {/* Step 3: Success */}
             {step === 3 && (
-              <div className="text-center space-y-6">
-                <div className="text-6xl animate-bounce">✓</div>
-                <h2 className="text-3xl font-bold text-gray-900">Booking Confirmed!</h2>
-                <p className="text-gray-600 text-lg">
-                  Your appointment has been successfully booked. A confirmation email has been sent to you.
-                </p>
-
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-6 text-left space-y-4">
-                  <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                    📋 Your Appointment Details
-                  </h3>
-                  
-                  {/* Services */}
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600 uppercase mb-2">Services</p>
-                    <div className="space-y-1">
-                      {getSelectedServicesDetails().map((service) => (
-                        <div key={service.id} className="flex justify-between text-sm">
-                          <span className="text-gray-700">{service.name}</span>
-                          <span className="text-gray-900 font-semibold">${service.price.toFixed(2)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Summary */}
-                  <div className="border-t border-green-200 pt-4 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Stylist:</span>
-                      <span className="font-semibold text-gray-900">
-                        {selectedEmployee === null
-                          ? '🎯 No Preference (Any Available)'
-                          : `${employees.find((e) => e.id === selectedEmployee)?.user?.firstName} ${employees.find((e) => e.id === selectedEmployee)?.user?.lastName}`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Date:</span>
-                      <span className="font-semibold text-gray-900">
-                        {parseLocalDate(selectedDate).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Time:</span>
-                      <span className="font-semibold text-gray-900">{selectedTime}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Duration:</span>
-                      <span className="font-semibold text-gray-900">{getTotalDuration()} minutes</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Price:</span>
-                      <span className="font-bold text-purple-600 text-lg">${getTotalPrice().toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {/* Client Notes Display */}
-                  {clientNotes && (
-                    <div className="border-t border-green-200 pt-4">
-                      <p className="text-sm font-semibold text-gray-600 uppercase mb-2">💬 Your Requests</p>
-                      <p className="text-sm text-gray-700 bg-white rounded p-3 italic">"{clientNotes}"</p>
-                    </div>
-                  )}
+              <div className="text-center space-y-8 py-12">
+                <div className="text-6xl">🎉</div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h2>
+                  <p className="text-gray-600 text-lg">Your appointment has been successfully booked.</p>
                 </div>
 
-                {/* Confirmation Actions */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800 mb-3">
-                    ✉️ A confirmation email with all details has been sent. You can also manage your appointment from your dashboard.
+                <div className="bg-gray-50 border-2 border-green-200 rounded-lg p-6 space-y-4">
+                  <p className="text-gray-700">
+                    📧 A confirmation email has been sent to your email.
                   </p>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => router.push('/dashboard')}
-                      className="flex-1 bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition-colors"
-                    >
-                      Go to Dashboard
-                    </button>
-                    <button
-                      onClick={() => router.push('/booking')}
-                      className="flex-1 bg-gray-300 text-gray-900 font-bold py-3 rounded-lg hover:bg-gray-400 transition-colors"
-                    >
-                      Book Another
-                    </button>
+                  <p className="text-gray-700">
+                    Please check your inbox (and spam folder) for the confirmation details.
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+                  <h3 className="font-bold text-gray-900 mb-4">Your Appointment</h3>
+                  <div className="space-y-2 text-gray-700">
+                    <p>📅 <strong>{parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}</strong></p>
+                    <p>🕐 <strong>{selectedTime}</strong></p>
+                    <p>💇 <strong>{selectedEmployee === null ? 'Any Available Stylist' : 
+                      employees.find(e => e.id === selectedEmployee)?.user?.firstName + ' ' + 
+                      employees.find(e => e.id === selectedEmployee)?.user?.lastName}</strong></p>
                   </div>
+                </div>
+
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    className="px-8 py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
+                  >
+                    Go to Dashboard
+                  </button>
+                  <button
+                    onClick={() => router.push('/booking')}
+                    className="px-8 py-3 bg-gray-200 text-gray-900 rounded-lg font-bold hover:bg-gray-300 transition-colors"
+                  >
+                    Book Another
+                  </button>
                 </div>
               </div>
             )}

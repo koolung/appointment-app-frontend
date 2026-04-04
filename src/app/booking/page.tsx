@@ -174,7 +174,7 @@ function InteractiveCalendar({ selectedDate, onDateChange }: InteractiveCalendar
                 ${disabled
                   ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
                   : isSelected
-                  ? 'bg-purple-600 text-white font-bold shadow-md'
+                  ? 'bg-[#35514e] text-white font-bold shadow-md'
                   : isToday
                   ? 'bg-purple-100 text-purple-900 border-2 border-purple-400'
                   : 'text-gray-700 bg-white hover:bg-purple-50 border border-gray-200'
@@ -554,7 +554,7 @@ const handleBooking = async () => {
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
                       idx <= step
-                        ? 'bg-purple-600 text-white'
+                        ? 'bg-[#35514e] text-white'
                         : 'bg-slate-300 text-slate-600'
                     }`}
                   >
@@ -564,7 +564,7 @@ const handleBooking = async () => {
                     {label}
                   </span>
                   {idx < 2 && (
-                    <div className={`h-1 w-12 ml-2 ${idx < step ? 'bg-purple-600' : 'bg-slate-300'}`} />
+                    <div className={`h-1 w-12 ml-2 ${idx < step ? 'bg-[#35514e]' : 'bg-slate-300'}`} />
                   )}
                 </div>
               ))}
@@ -590,7 +590,7 @@ const handleBooking = async () => {
                           onClick={() => setSelectedCategory(categoryName)}
                           className={`w-full text-left px-4 border-2 border-[#fdb5ff] py-3 rounded-lg font-medium transition-all ${
                             selectedCategory === categoryName
-                              ? 'bg-purple-600 text-white shadow-lg'
+                              ? 'bg-[#35514e] text-white shadow-lg'
                               : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                           }`}
                         >
@@ -628,7 +628,7 @@ const handleBooking = async () => {
                                 <div
                                   className={`w-6 h-6 rounded border-2 flex items-center justify-center mt-0 flex-shrink-0 ${
                                     selectedServices.includes(service.id)
-                                      ? 'bg-purple-600 border-purple-600'
+                                      ? 'bg-[#35514e] border-purple-600'
                                       : 'border-gray-300'
                                   }`}
                                 >
@@ -706,7 +706,7 @@ const handleBooking = async () => {
                 <button
                   onClick={() => setStep(1)}
                   disabled={selectedServices.length === 0}
-                  className="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="w-full bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
                   Continue to Details
                 </button>
@@ -905,9 +905,9 @@ const handleBooking = async () => {
                       <div className="text-center py-8">
                         <p className="text-gray-600 mb-2">⏳ Loading available times...</p>
                         <div className="flex justify-center gap-1">
-                          <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                         </div>
                       </div>
                     ) : availableSlots.length > 0 ? (
@@ -939,7 +939,7 @@ const handleBooking = async () => {
                                   isPastSlot
                                     ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
                                     : isSelected
-                                    ? 'border-purple-600 bg-purple-600 text-white shadow-lg'
+                                    ? 'border-purple-600 bg-[#35514e] text-white shadow-lg'
                                     : isNextAvail
                                     ? 'border-green-500 bg-green-50 text-gray-900 hover:bg-green-100'
                                     : 'border-gray-300 hover:border-purple-500 text-gray-900'
@@ -1014,7 +1014,7 @@ const handleBooking = async () => {
                   <button
                     onClick={() => setStep(2)}
                     disabled={!selectedDate || !selectedTime}
-                    className="flex-1 bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                   >
                     Review Booking
                   </button>
@@ -1172,7 +1172,7 @@ const handleBooking = async () => {
                   <button
                     onClick={handleBooking}
                     disabled={isBooking || !consentToPolicies}
-                    className="flex-1 bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                   >
                     {isBooking ? '⏳ Confirming...' : '✓ Confirm & Book'}
                   </button>
@@ -1267,7 +1267,7 @@ const handleBooking = async () => {
                   <div className="flex gap-3">
                     <button
                       onClick={() => router.push('/dashboard')}
-                      className="flex-1 bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                      className="flex-1 bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition-colors"
                     >
                       Go to Dashboard
                     </button>

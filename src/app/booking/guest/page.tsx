@@ -168,10 +168,10 @@ function InteractiveCalendar({ selectedDate, onDateChange }: InteractiveCalendar
                 ${disabled
                   ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
                   : isSelected
-                  ? 'bg-purple-600 text-white font-bold shadow-md'
+                  ? 'bg-[#35514e] text-white font-bold shadow-md'
                   : isToday
-                  ? 'bg-purple-100 text-purple-900 border-2 border-purple-400'
-                  : 'text-gray-700 bg-white hover:bg-purple-50 border border-gray-200'
+                  ? 'bg-[#e0d7f3] text-[#4b2995] border-2 border-[#4b2995]'
+                  : 'text-gray-700 bg-white hover:bg-[#f3e8ff] border border-gray-200'
                 }
               `}
             >
@@ -208,6 +208,11 @@ export default function GuestBookingPage() {
   const [contactDetailsError, setContactDetailsError] = useState('');
 
   // UI states
+  const [isCategoryNavOpen, setIsCategoryNavOpen] = useState(false);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [isPolicyExpanded, setIsPolicyExpanded] = useState(false);
+  const [isServicesReminderExpanded, setIsServicesReminderExpanded] = useState(false);
+  const [isSummaryDetailExpanded, setIsSummaryDetailExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [expandedService, setExpandedService] = useState<string | null>(null);
@@ -510,19 +515,37 @@ export default function GuestBookingPage() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8">
-            <h1 className="text-4xl font-bold mb-2">Book an Appointment</h1>
-            <p className="text-purple-100">Guest Booking - No Account Required</p>
+          <div className="bg-white text-gray-900 p-8 border-t-xl">
+            <h1 className="text-4xl font-bold mb-2">Guest Booking</h1>
+            <p className="text-gray-600">Guest Booking - No Account Required</p>
           </div>
 
           {/* Booking Warning Message */}
           {bookingWarningMessage && (
-            <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mx-8 mt-6">
-              <div className="flex gap-3">
-                <span className="text-amber-600 text-2xl">⚠️</span>
-                <div>
-                  <p className="font-semibold text-amber-800">{bookingWarningMessage}</p>
+            <div className="bg-gray-50 border-l-4 border-[#35514e] mx-8 md:mt-6">
+              {/* Mobile: collapsible */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => setIsPolicyExpanded(!isPolicyExpanded)}
+                  className="w-full flex items-center justify-between p-4 text-left"
+                >
+                  <span className="font-semibold text-[#35514e] text-sm">Cancellation Policy</span>
+                  <svg
+                    className={`w-4 h-4 text-[#35514e] transition-transform duration-300 ${isPolicyExpanded ? 'rotate-180' : 'rotate-0'}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPolicyExpanded ? 'max-h-40' : 'max-h-0'}`}>
+                  <p className="px-4 pb-4 text-sm text-[#35514e]">{bookingWarningMessage}</p>
                 </div>
+              </div>
+              {/* Desktop: always visible */}
+              <div className="hidden md:block p-4">
+                <p className="font-semibold text-[#35514e]">{bookingWarningMessage}</p>
               </div>
             </div>
           )}
@@ -535,7 +558,7 @@ export default function GuestBookingPage() {
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
                       step >= idx
-                        ? 'bg-purple-600 text-white'
+                        ? 'bg-[#35514e] text-white'
                         : 'bg-gray-300 text-gray-600'
                     }`}
                   >
@@ -544,7 +567,7 @@ export default function GuestBookingPage() {
                   {idx < 4 && (
                     <div
                       className={`flex-1 h-1 mx-2 ${
-                        step > idx ? 'bg-purple-600' : 'bg-gray-300'
+                        step > idx ? 'bg-[#35514e]' : 'bg-gray-300'
                       }`}
                     />
                   )}
@@ -559,28 +582,25 @@ export default function GuestBookingPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">Step 1: Select Services</h2>
-                  <p className="text-gray-600 mb-6">Choose the services you'd like to book</p>
+                  <p className="text-gray-600 mb-6">Choose the services and scroll down</p>
                 </div>
 
                 {/* Service Categories Sidebar */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {/* Categories */}
                   <div className="md:col-span-1">
-                    <div className="sticky top-4 space-y-2">
+                    <div className="sticky top-4 grid grid-cols-3 md:grid-cols-1 gap-1.5 md:gap-2">
                       {getServiceCategories().map((category: string) => (
                         <button
                           key={category}
                           onClick={() => setSelectedCategory(category)}
-                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
+                          className={`w-full text-left px-2.5 py-2 md:px-4 md:py-3 rounded-lg transition-colors font-medium text-xs md:text-sm ${
                             selectedCategory === category
-                              ? 'bg-purple-600 text-white'
+                              ? 'bg-[#35514e] text-white'
                               : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                           }`}
                         >
                           {category}
-                          <span className="text-sm ml-2">
-                            ({getServicesByCategory(category).length})
-                          </span>
                         </button>
                       ))}
                     </div>
@@ -601,8 +621,8 @@ export default function GuestBookingPage() {
                           }}
                           className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                             selectedServices.includes(service.id)
-                              ? 'border-purple-600 bg-purple-50'
-                              : 'border-gray-200 hover:border-purple-300'
+                              ? 'border-[#35514e] bg-[#e0f2f1]'
+                              : 'border-gray-200 hover:border-[#35514e]'
                           }`}
                         >
                           <div className="flex items-center justify-between">
@@ -611,14 +631,14 @@ export default function GuestBookingPage() {
                               {service.description && (
                                 <p className="text-sm text-gray-600 mt-1">{service.description}</p>
                               )}
-                              <p className="text-xs text-gray-500 mt-2">
-                                ⏱️ {service.baseDuration} minutes
+                              <p className="text-xs text-gray-500 mt-2 px-2 py-1 border-2 border-[#e5e7eb] rounded-2xl inline-flex items-center gap-1">
+                                <i className="fi fi-rr-clock"></i> {service.baseDuration} minutes
                               </p>
                             </div>
                             <div className="text-right ml-4">
-                              <p className="font-bold text-purple-600">${service.price.toFixed(2)}</p>
+                              <p className="font-bold text-[#35514e]">${service.price.toFixed(2)}</p>
                               {selectedServices.includes(service.id) && (
-                                <p className="text-purple-600 text-lg">✓</p>
+                                <p className="text-[#35514e] text-lg">✓</p>
                               )}
                             </div>
                           </div>
@@ -628,30 +648,113 @@ export default function GuestBookingPage() {
                   </div>
                 </div>
 
-                {/* Summary and Continue Button */}
+                {/* Summary and Continue Button - Sticky Bottom Bar */}
                 {selectedServices.length > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-8">
-                    <p className="text-sm font-semibold text-blue-900 mb-2">Services Selected:</p>
-                    <div className="space-y-1">
-                      {getSelectedServicesDetails().map((service) => (
-                        <p key={service.id} className="text-sm text-blue-800">
-                          • {service.name} ({service.baseDuration} mins) - ${service.price.toFixed(2)}
-                        </p>
-                      ))}
+                  <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+                    <div className="max-w-4xl mx-auto">
+                      {/* Collapsible service list */}
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          isSummaryExpanded ? 'max-h-60' : 'max-h-0'
+                        }`}
+                      >
+                        <div className="px-4 pt-3 pb-1 space-y-1.5 max-h-52 overflow-y-auto">
+                          {getSelectedServicesDetails().map((service) => (
+                            <div key={service.id} className="flex items-center justify-between text-sm">
+                              <span className="text-gray-700">{service.name} ({service.baseDuration} min)</span>
+                              <span className="font-semibold text-gray-900">${service.price.toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <button
+                              onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                              className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+                            >
+                              <svg
+                                className={`w-4 h-4 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                              {selectedServices.length} service{selectedServices.length > 1 ? 's' : ''} • {getTotalDuration()} min • ${getTotalPrice().toFixed(2)}
+                            </button>
+                            <p className="text-xs text-gray-500 truncate ml-5.5">
+                              {getSelectedServicesDetails().map(s => s.name).join(', ')}
+                            </p>
+                          </div>
+                          <button
+                            onClick={handleContinueFromServices}
+                            className="shrink-0 px-6 py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
+                          >
+                            Continue
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-blue-900 mt-2">
-                      Total: {getTotalDuration()} minutes | ${getTotalPrice().toFixed(2)}
-                    </p>
                   </div>
                 )}
 
-                <button
-                  onClick={handleContinueFromServices}
-                  disabled={selectedServices.length === 0}
-                  className="w-full py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  Continue to Date & Time
-                </button>
+                {/* Mobile Floating Category Nav Panel */}
+                <div className="md:hidden">
+                  {/* Backdrop */}
+                  {isCategoryNavOpen && (
+                    <div
+                      className="fixed inset-0 bg-black/20 z-40"
+                      onClick={() => setIsCategoryNavOpen(false)}
+                    />
+                  )}
+
+                  <div
+                    className={`fixed top-1/2 -translate-y-1/2 right-0 z-50 transition-transform duration-300 ease-in-out ${
+                      isCategoryNavOpen ? 'translate-x-0' : 'translate-x-[calc(100%-28px)]'
+                    }`}
+                  >
+                    <div className="flex items-stretch">
+                      {/* Tab handle */}
+                      <button
+                        onClick={() => setIsCategoryNavOpen(!isCategoryNavOpen)}
+                        className="w-7 bg-[#35514e] text-white flex items-center justify-center shadow-lg shrink-0 py-3"
+                      >
+                        <span className="text-[14px] uppercase font-medium tracking-wide" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                          Categories
+                        </span>
+                      </button>
+
+                      {/* Panel content */}
+                      <div className="bg-white border border-r-0 border-gray-200 rounded-l-lg shadow-xl p-3 w-48">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categories</p>
+                        <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
+                          {getServiceCategories().map((category: string) => (
+                            <button
+                              key={category}
+                              onClick={() => {
+                                setSelectedCategory(category);
+                                setIsCategoryNavOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-md transition-colors text-xs font-medium ${
+                                selectedCategory === category
+                                  ? 'bg-[#35514e] text-white'
+                                  : 'bg-gray-50 text-gray-800 hover:bg-gray-100'
+                              }`}
+                            >
+                              {category}
+                              <span className="ml-1 opacity-70">
+                                ({getServicesByCategory(category).length})
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -664,18 +767,52 @@ export default function GuestBookingPage() {
                 </div>
 
                 {/* Selected Services Reminder */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-blue-900 mb-2">Services Selected:</p>
-                  <div className="space-y-1">
-                    {getSelectedServicesDetails().map((service) => (
-                      <p key={service.id} className="text-sm text-blue-800">
-                        • {service.name} ({service.baseDuration} mins) - ${service.price.toFixed(2)}
-                      </p>
-                    ))}
+                <div className="bg-gray-50 border-l-4 border-[#35514e]">
+                  {/* Mobile: collapsible */}
+                  <div className="md:hidden">
+                    <button
+                      onClick={() => setIsServicesReminderExpanded(!isServicesReminderExpanded)}
+                      className="w-full flex items-center justify-between p-4 text-left"
+                    >
+                      <span className="font-semibold text-[#35514e] text-sm">
+                        Services Selected ({selectedServices.length}) • ${getTotalPrice().toFixed(2)}
+                      </span>
+                      <svg
+                        className={`w-4 h-4 text-[#35514e] transition-transform duration-300 ${isServicesReminderExpanded ? 'rotate-180' : 'rotate-0'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isServicesReminderExpanded ? 'max-h-60' : 'max-h-0'}`}>
+                      <div className="px-4 pb-4 space-y-1">
+                        {getSelectedServicesDetails().map((service) => (
+                          <p key={service.id} className="text-sm text-[#35514e]">
+                            • {service.name} ({service.baseDuration} mins) - ${service.price.toFixed(2)}
+                          </p>
+                        ))}
+                        <p className="text-sm font-semibold text-[#35514e] mt-2">
+                          Total: {getTotalDuration()} minutes
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-blue-900 mt-2">
-                    Total: {getTotalDuration()} minutes
-                  </p>
+                  {/* Desktop: always visible */}
+                  <div className="hidden md:block p-4">
+                    <p className="font-semibold text-[#35514e] mb-2">Services Selected:</p>
+                    <div className="space-y-1">
+                      {getSelectedServicesDetails().map((service) => (
+                        <p key={service.id} className="text-sm text-[#35514e]">
+                          • {service.name} ({service.baseDuration} mins) - ${service.price.toFixed(2)}
+                        </p>
+                      ))}
+                    </div>
+                    <p className="font-semibold text-[#35514e] mt-2">
+                      Total: {getTotalDuration()} minutes
+                    </p>
+                  </div>
                 </div>
 
                 {/* Employee Selection */}
@@ -684,17 +821,17 @@ export default function GuestBookingPage() {
                   <div className="space-y-3">
                     <button
                       onClick={() => setSelectedEmployee(null)}
-                      className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
+                      className={`w-full p-2.5 md:p-4 rounded-lg border-2 text-left transition-colors ${
                         selectedEmployee === null
-                          ? 'border-purple-600 bg-purple-50'
-                          : 'border-gray-200 hover:border-purple-300'
+                          ? 'border-[#35514e] bg-transparent'
+                          : 'border-gray-200 hover:border-[#35514e]'
                       }`}
                     >
-                      <p className="font-bold text-gray-900">🎯 No Preference</p>
-                      <p className="text-sm text-gray-600 mt-1">Any available stylist</p>
+                      <p className="font-bold text-xs md:text-base text-gray-900">No Preference</p>
+                      <p className="text-xs md:text-sm text-gray-600 mt-0.5 md:mt-1">Any available stylist</p>
                     </button>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 md:grid-cols-2 gap-2 md:gap-3">
                       {employees.filter(emp => emp.isActive !== false).map((emp) => {
                         const canProvide = canEmployeeProvidServices(emp.id);
                         const availCount = employeeAvailabilityCount[emp.id] || 0;
@@ -703,24 +840,24 @@ export default function GuestBookingPage() {
                           <div
                             key={emp.id}
                             onClick={() => canProvide && setSelectedEmployee(emp.id)}
-                            className={`p-4 rounded-lg border-2 transition-all ${
+                            className={`p-2 md:p-4 rounded-lg border-2 transition-all ${
                               !canProvide
                                 ? 'border-gray-300 bg-gray-100 cursor-not-allowed opacity-60'
                                 : selectedEmployee === emp.id
-                                ? 'border-purple-600 bg-purple-50 cursor-pointer'
-                                : 'border-gray-200 hover:border-purple-300 cursor-pointer'
+                                ? 'border-[#35514e] bg-transparent cursor-pointer'
+                                : 'border-gray-200 hover:border-[#35514e] cursor-pointer'
                             }`}
                           >
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex flex-col md:flex-row justify-between items-start mb-1 md:mb-2">
                               <div>
-                                <p className={`font-bold ${!canProvide ? 'text-gray-500' : 'text-gray-900'}`}>
+                                <p className={`font-bold text-xs md:text-base ${!canProvide ? 'text-gray-500' : 'text-gray-900'}`}>
                                   {emp.user?.firstName} {emp.user?.lastName}
                                 </p>
                               </div>
                               {selectedDate && (
-                                <div className={`text-xs font-semibold px-2 py-1 rounded ${
+                                <div className={`text-[10px] md:text-xs font-semibold px-1.5 py-0.5 md:px-2 md:py-1 rounded mt-1 md:mt-0 ${
                                   availCount > 0
-                                    ? 'bg-green-100 text-green-700'
+                                    ? 'bg-gray-100 text-green-700'
                                     : 'bg-red-100 text-red-700'
                                 }`}>
                                   {availCount} slots
@@ -729,8 +866,8 @@ export default function GuestBookingPage() {
                             </div>
 
                             {selectedServices.length > 0 && !canProvide && (
-                              <p className="text-xs text-gray-600 font-semibold mb-2">
-                                ⚠️ Doesn't offer one or more selected services
+                              <p className="text-[10px] md:text-xs text-gray-600 font-semibold mb-1 md:mb-2">
+                                ⚠️ N/A
                               </p>
                             )}
                           </div>
@@ -759,7 +896,7 @@ export default function GuestBookingPage() {
                     {selectedDate && (
                       <div className="flex gap-3 items-center mb-3">
                         <div className="text-sm text-gray-700 font-medium">
-                          📅 Selected: {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                          Selected: {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                             weekday: 'short', 
                             month: 'short', 
                             day: 'numeric',
@@ -768,14 +905,14 @@ export default function GuestBookingPage() {
                         </div>
                         <div className="text-xs text-gray-600 bg-gray-50 px-3 py-1 rounded-lg font-medium">
                           {selectedEmployee === null
-                            ? `${availableSlots.length} merged slots`
+                            ? `${availableSlots.length} slots`
                             : `${employeeAvailabilityCount[selectedEmployee] ?? 0} slots`
                           }
                         </div>
                       </div>
                     )}
                     
-                    <p className="text-xs text-gray-500 mt-2">📅 Select a date at least 1 day in advance. You can book up to 60 days ahead.</p>
+                    <p className="text-xs text-gray-500 mt-2">Select a date at least 1 day in advance. <br></br>You can book up to 60 days ahead.</p>
                   </div>
 
                   {/* Time Selection */}
@@ -784,8 +921,8 @@ export default function GuestBookingPage() {
                       <div className="flex items-center justify-between mb-3">
                         <label className="block text-gray-900 font-bold">Select Time</label>
                         {nextAvailableSlot && (
-                          <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">
-                            ✓ Next available: {new Date(nextAvailableSlot).toLocaleTimeString('en-US', {
+                          <span className="text-xs bg-gray-100 text-green-700 px-3 py-1 rounded-full font-semibold">
+                            Next available: {new Date(nextAvailableSlot).toLocaleTimeString('en-US', {
                               hour: '2-digit',
                               minute: '2-digit',
                               hour12: true,
@@ -796,17 +933,17 @@ export default function GuestBookingPage() {
 
                       {isLoading ? (
                         <div className="text-center py-8">
-                          <p className="text-gray-600 mb-2">⏳ Loading available times...</p>
+                          <p className="text-gray-600 mb-2">Loading available times...</p>
                           <div className="flex justify-center gap-1">
-                            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                            <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                            <div className="w-2 h-2 bg-[#35514e] rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                           </div>
                         </div>
                       ) : availableSlots.length > 0 ? (
                         <div>
-                          <div className="text-sm text-gray-600 mb-4">
-                            📅 {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                          <div className="text-xs text-gray-600 mb-4">
+                            {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
                               weekday: 'long', 
                               month: 'short', 
                               day: 'numeric' 
@@ -827,7 +964,7 @@ export default function GuestBookingPage() {
                                   onClick={() => setSelectedTime(timeStr)}
                                   className={`p-2 rounded-lg font-medium text-sm transition-all border ${
                                     isSelected
-                                      ? 'border-purple-600 bg-purple-600 text-white shadow-lg'
+                                      ? 'border-purple-600 bg-[#35514e] text-white shadow-lg'
                                       : 'border-gray-300 bg-white hover:border-purple-500 text-gray-900'
                                   }`}
                                 >
@@ -853,7 +990,7 @@ export default function GuestBookingPage() {
                 <button
                   onClick={handleContinueFromDateTime}
                   disabled={!selectedTime}
-                  className="w-full py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="w-full py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
                   Continue to Contact Details
                 </button>
@@ -869,20 +1006,55 @@ export default function GuestBookingPage() {
                 </div>
 
                 {/* Summary */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-blue-900 mb-3">Appointment Summary:</p>
-                  <div className="space-y-1 text-sm text-blue-800">
-                    <p>📅 {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
-                      weekday: 'long',
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}</p>
-                    <p>⏰ {selectedTime}</p>
-                    <p>💇 {selectedEmployee === null ? 'Any Available Stylist' : 
-                      employees.find(e => e.id === selectedEmployee)?.user?.firstName + ' ' + 
-                      employees.find(e => e.id === selectedEmployee)?.user?.lastName}</p>
-                    <p>⏱️ {getTotalDuration()} minutes | ${getTotalPrice().toFixed(2)}</p>
+                <div className="bg-gray-50 border-l-4 border-[#35514e]">
+                  {/* Mobile: collapsible */}
+                  <div className="md:hidden">
+                    <button
+                      onClick={() => setIsSummaryDetailExpanded(!isSummaryDetailExpanded)}
+                      className="w-full flex items-center justify-between p-4 text-left"
+                    >
+                      <span className="font-semibold text-[#35514e] text-sm">Appointment Summary</span>
+                      <svg
+                        className={`w-4 h-4 text-[#35514e] transition-transform duration-300 ${isSummaryDetailExpanded ? 'rotate-180' : 'rotate-0'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryDetailExpanded ? 'max-h-60' : 'max-h-0'}`}>
+                      <div className="px-4 pb-4 space-y-1 text-sm text-[#35514e]">
+                        <p> {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}</p>
+                        <p> {selectedTime}</p>
+                        <p> <i className="fi fi-rs-user"></i>{selectedEmployee === null ? 'Any Available Stylist' : 
+                          employees.find(e => e.id === selectedEmployee)?.user?.firstName + ' ' + 
+                          employees.find(e => e.id === selectedEmployee)?.user?.lastName}</p>
+                        <p><i className="fi fi-rr-clock"></i> {getTotalDuration()} minutes | ${getTotalPrice().toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Desktop: always visible */}
+                  <div className="hidden md:block p-4">
+                    <p className="font-semibold text-[#35514e] mb-3">Appointment Summary:</p>
+                    <div className="space-y-1 text-sm text-[#35514e]">
+                      <p> {parseLocalDate(selectedDate).toLocaleDateString('en-US', { 
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}</p>
+                      <p> {selectedTime}</p>
+                      <p> <i className="fi fi-rs-user"></i>{selectedEmployee === null ? 'Any Available Stylist' : 
+                        employees.find(e => e.id === selectedEmployee)?.user?.firstName + ' ' + 
+                        employees.find(e => e.id === selectedEmployee)?.user?.lastName}</p>
+                      <p><i className="fi fi-rr-clock"></i> {getTotalDuration()} minutes | ${getTotalPrice().toFixed(2)}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -934,16 +1106,16 @@ export default function GuestBookingPage() {
                   </div>
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <p className="text-sm text-amber-800">
-                    🔒 We'll use this information to send your booking confirmation and appointment reminders.
+                <div className="bg-transparent border border-gray-600 rounded-lg p-4">
+                  <p className="text-sm text-gray-600">
+                      We'll use this information to send your booking confirmation and appointment reminders.
                   </p>
                 </div>
 
                 <div className="flex gap-4">
                   <button
                     onClick={handleContinueFromContact}
-                    className="flex-1 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
+                    className="flex-1 py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
                   >
                     Continue to Review
                   </button>
@@ -959,7 +1131,7 @@ export default function GuestBookingPage() {
                   <p className="text-gray-600">Already have an account?</p>
                   <Link 
                     href="/login"
-                    className="text-purple-600 font-bold hover:underline"
+                    className="text-[#35514e] font-bold hover:underline"
                   >
                     Sign In Instead
                   </Link>
@@ -1050,7 +1222,7 @@ export default function GuestBookingPage() {
                   <button
                     onClick={handleBooking}
                     disabled={isBooking}
-                    className="flex-1 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
+                    className="flex-1 py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 disabled:bg-gray-400 transition-colors"
                   >
                     {isBooking ? 'Confirming...' : 'Confirm Booking'}
                   </button>
@@ -1073,7 +1245,7 @@ export default function GuestBookingPage() {
                   <p className="text-gray-600 text-lg">Your appointment has been successfully booked.</p>
                 </div>
 
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 space-y-4">
+                <div className="bg-gray-50 border-2 border-green-200 rounded-lg p-6 space-y-4">
                   <p className="text-gray-700">
                     📧 A confirmation email has been sent to <strong>{guestEmail}</strong>
                   </p>
@@ -1101,7 +1273,7 @@ export default function GuestBookingPage() {
                 <div className="flex gap-4 justify-center">
                   <Link
                     href="/"
-                    className="px-8 py-3 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
+                    className="px-8 py-3 bg-[#35514e] text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
                   >
                     Back to Home
                   </Link>

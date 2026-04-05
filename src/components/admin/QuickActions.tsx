@@ -1,7 +1,8 @@
+import { ReactNode } from 'react';
 import Link from 'next/link';
 
 interface ActionItem {
-  icon: string;
+  icon: ReactNode;
   label: string;
   href: string;
   description: string;
@@ -9,25 +10,25 @@ interface ActionItem {
 
 const actions: ActionItem[] = [
   {
-    icon: '👤',
+    icon: <i className="fi fi-rr-users-alt"></i>,
     label: 'Add Employee',
     href: '/admin/employees/new',
     description: 'Create a new employee account',
   },
   {
-    icon: '✨',
+    icon: <i className="fi fi-rr-boxes"></i>,
     label: 'Add Service',
     href: '/admin/services/new',
     description: 'Create a new salon service',
   },
   {
-    icon: '📅',
+    icon: <i className="fi fi-rr-calendar-day"></i>,
     label: 'View Calendar',
     href: '/admin/appointments',
     description: 'Manage all appointments',
   },
   {
-    icon: '📊',
+    icon: <i className="fi fi-br-stats"></i>,
     label: 'View Reports',
     href: '/admin/reports',
     description: 'Check revenue and analytics',

@@ -216,6 +216,7 @@ export default function BookingPage() {
   const [isPolicyExpanded, setIsPolicyExpanded] = useState(false);
   const [isServicesReminderExpanded, setIsServicesReminderExpanded] = useState(false);
   const [isSummaryDetailExpanded, setIsSummaryDetailExpanded] = useState(false);
+  const [isTermsExpanded, setIsTermsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [expandedService, setExpandedService] = useState<string | null>(null);
@@ -253,6 +254,10 @@ export default function BookingPage() {
       }
     }
   }, [services, selectedCategory]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
 
   useEffect(() => {
     // Auto-select today's date when step 1 is reached and no date is selected
@@ -1112,32 +1117,7 @@ const handleBooking = async () => {
                 </div>
 
                 {/* Terms & Conditions */}
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-                  <h3 className="font-bold text-gray-900 mb-4">📋 Terms & Conditions</h3>
-                  
-                  <div className="space-y-3 mb-4 text-sm text-gray-700 max-h-48 overflow-y-auto">
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">Cancellation Policy</p>
-                      <p>Cancellations must be made at least 24 hours before your appointment. Cancellations within 24 hours may incur a cancellation fee.</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">No-Show Policy</p>
-                      <p>If you do not show up for your appointment without prior notice, a no-show fee may be charged to your account.</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">Payment Terms</p>
-                      <p>Payment is due at the time of service. We accept all major credit cards and cash.</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">Health & Safety</p>
-                      <p>By booking, you confirm that you are healthy and have no contagious conditions. You also confirm you have disclosed any relevant allergies or medical conditions.</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">Privacy</p>
-                      <p>Your personal information will be kept confidential and used only for appointment management and communication purposes.</p>
-                    </div>
-                  </div>
-
+                <div className="border-2 border-gray-200 rounded-lg p-4">
                   {/* Consent Checkbox */}
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
@@ -1147,12 +1127,51 @@ const handleBooking = async () => {
                       className="w-5 h-5 mt-0.5 cursor-pointer border-gray-300 rounded text-purple-600 focus:ring-2 focus:ring-purple-500"
                     />
                     <span className="text-sm text-gray-700">
-                      I agree to the <strong>cancellation policy</strong>, <strong>no-show policy</strong>, 
-                      and <strong>terms of service</strong>. I have disclosed all relevant health information 
-                      and allergies.
+                      I agree to the <strong>terms and conditions</strong>.
                       <span className="text-red-600 font-bold ml-1">*</span>
                     </span>
                   </label>
+
+                  {/* Expandable details */}
+                  <button
+                    onClick={() => setIsTermsExpanded(!isTermsExpanded)}
+                    className="mt-3 ml-8 flex items-center gap-1 text-xs text-[#35514e] font-semibold hover:underline"
+                  >
+                    <svg
+                      className={`w-3 h-3 transition-transform duration-300 ${isTermsExpanded ? 'rotate-180' : 'rotate-0'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    {isTermsExpanded ? 'Hide' : 'View'} Terms & Conditions
+                  </button>
+
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isTermsExpanded ? 'max-h-96' : 'max-h-0'}`}>
+                    <div className="ml-8 mt-3 space-y-3 text-sm text-gray-700 max-h-48 overflow-y-auto border-t border-gray-200 pt-3">
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Cancellation Policy</p>
+                        <p>Cancellations must be made at least 24 hours before your appointment. Cancellations within 24 hours may incur a cancellation fee.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">No-Show Policy</p>
+                        <p>If you do not show up for your appointment without prior notice, a no-show fee may be charged to your account.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Payment Terms</p>
+                        <p>Payment is due at the time of service. We accept all major credit cards and cash.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Health & Safety</p>
+                        <p>By booking, you confirm that you are healthy and have no contagious conditions. You also confirm you have disclosed any relevant allergies or medical conditions.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Privacy</p>
+                        <p>Your personal information will be kept confidential and used only for appointment management and communication purposes.</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Navigation Buttons */}

@@ -213,8 +213,10 @@ export default function GuestBookingPage() {
   const [isPolicyExpanded, setIsPolicyExpanded] = useState(false);
   const [isServicesReminderExpanded, setIsServicesReminderExpanded] = useState(false);
   const [isSummaryDetailExpanded, setIsSummaryDetailExpanded] = useState(false);
+  const [isTermsExpanded, setIsTermsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+  const [consentToPolicies, setConsentToPolicies] = useState(false);
 
   // Account creation states
   const [showCreateAccount, setShowCreateAccount] = useState(false);
@@ -228,7 +230,7 @@ export default function GuestBookingPage() {
   const [nextAvailableSlot, setNextAvailableSlot] = useState<string | null>(null);
   const [userTimezone, setUserTimezone] = useState<string>('UTC');
 
-  // Step state (0 = services, 1 = employee/date/time, 2 = contact details, 3 = review, 4 = success)
+  // Step state (0 = services, 1 = employee/date/time, 2 = contact details & confirm, 3 = success)
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -248,6 +250,10 @@ export default function GuestBookingPage() {
       }
     }
   }, [services, selectedCategory]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
 
   useEffect(() => {
     if (step === 1 && !selectedDate) {
@@ -475,8 +481,12 @@ export default function GuestBookingPage() {
       setContactDetailsError('Phone number is required');
       return;
     }
+    if (!consentToPolicies) {
+      setContactDetailsError('You must agree to the terms and conditions');
+      return;
+    }
 
-    setStep(3);
+    handleBooking();
   };
 
   const handleBooking = async () => {
@@ -509,7 +519,7 @@ export default function GuestBookingPage() {
         clientPhone: guestPhone,
       });
 
-      setStep(4);
+      setStep(3);
     } catch (error: any) {
       console.error('Booking failed:', error);
       alert(error.response?.data?.message || 'Booking failed. Please try again.');
@@ -592,7 +602,7 @@ export default function GuestBookingPage() {
           {/* Progress Indicator */}
           <div className="px-8 pt-8 pb-4">
             <div className="flex justify-between items-center">
-              {['Services', 'Date & Time', 'Contact', 'Review', 'Success'].map((label, idx) => (
+              {['Services', 'Date & Time', 'Contact & Confirm', 'Success'].map((label, idx) => (
                 <div key={idx} className="flex items-center flex-1">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
@@ -603,7 +613,7 @@ export default function GuestBookingPage() {
                   >
                     {idx + 1}
                   </div>
-                  {idx < 4 && (
+                  {idx < 3 && (
                     <div
                       className={`flex-1 h-1 mx-2 ${
                         step > idx ? 'bg-[#35514e]' : 'bg-gray-300'
@@ -1040,8 +1050,8 @@ export default function GuestBookingPage() {
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Step 3: Your Contact Details</h2>
-                  <p className="text-gray-600 mb-6">We'll send your confirmation to this email</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Step 3: Contact Details & Confirm</h2>
+                  <p className="text-gray-600 mb-6">Enter your details, review, and confirm your booking</p>
                 </div>
 
                 {/* Summary */}
@@ -1151,6 +1161,72 @@ export default function GuestBookingPage() {
                   </p>
                 </div>
 
+                {/* Terms & Conditions */}
+                <div className="border-2 border-gray-200 rounded-lg p-4">
+                  {/* Consent Checkbox */}
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={consentToPolicies}
+                      onChange={(e) => setConsentToPolicies(e.target.checked)}
+                      className="w-5 h-5 mt-0.5 cursor-pointer border-gray-300 rounded text-purple-600 focus:ring-2 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I agree to the <strong>terms and conditions</strong>.
+                      <span className="text-red-600 font-bold ml-1">*</span>
+                    </span>
+                  </label>
+
+                  {/* Expandable details */}
+                  <button
+                    onClick={() => setIsTermsExpanded(!isTermsExpanded)}
+                    className="mt-3 ml-8 flex items-center gap-1 text-xs text-[#35514e] font-semibold hover:underline"
+                  >
+                    <svg
+                      className={`w-3 h-3 transition-transform duration-300 ${isTermsExpanded ? 'rotate-180' : 'rotate-0'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    {isTermsExpanded ? 'Hide' : 'View'} Terms & Conditions
+                  </button>
+
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isTermsExpanded ? 'max-h-96' : 'max-h-0'}`}>
+                    <div className="ml-8 mt-3 space-y-3 text-sm text-gray-700 max-h-48 overflow-y-auto border-t border-gray-200 pt-3">
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Cancellation Policy</p>
+                        <p>Cancellations must be made at least 24 hours before your appointment. Cancellations within 24 hours may incur a cancellation fee.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">No-Show Policy</p>
+                        <p>If you do not show up for your appointment without prior notice, a no-show fee may be charged to your account.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Payment Terms</p>
+                        <p>Payment is due at the time of service. We accept all major credit cards and cash.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Health & Safety</p>
+                        <p>By booking, you confirm that you are healthy and have no contagious conditions. You also confirm you have disclosed any relevant allergies or medical conditions.</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-1">Privacy</p>
+                        <p>Your personal information will be kept confidential and used only for appointment management and communication purposes.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {!consentToPolicies && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <p className="text-sm text-amber-800">
+                      ⚠️ You must agree to the terms and conditions to complete your booking.
+                    </p>
+                  </div>
+                )}
+
                 {/* Navigation Buttons */}
                 <div className="flex gap-3 w-full">
                   <button
@@ -1161,9 +1237,10 @@ export default function GuestBookingPage() {
                   </button>
                   <button
                     onClick={handleContinueFromContact}
-                    className="w-[70%] bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                    disabled={isBooking || !consentToPolicies}
+                    className="w-[70%] bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                   >
-                    Continue to Review
+                    {isBooking ? '⏳ Confirming...' : '✓ Confirm & Book'}
                   </button>
                 </div>
 
@@ -1179,105 +1256,8 @@ export default function GuestBookingPage() {
               </div>
             )}
 
-            {/* Step 3: Review */}
+            {/* Step 3: Success */}
             {step === 3 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Step 4: Review Your Booking</h2>
-                  <p className="text-gray-600 mb-6">Please verify all details before confirming</p>
-                </div>
-
-                {/* Appointment Details */}
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-gray-900">Appointment Details</h3>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Date</p>
-                      <p className="font-bold text-gray-900">{new Date(selectedDate).toLocaleDateString('en-US', { 
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Time</p>
-                      <p className="font-bold text-gray-900">{selectedTime}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Stylist</p>
-                      <p className="font-bold text-gray-900">{selectedEmployee === null ? 'Any Available' : 
-                        employees.find(e => e.id === selectedEmployee)?.user?.firstName + ' ' + 
-                        employees.find(e => e.id === selectedEmployee)?.user?.lastName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Duration</p>
-                      <p className="font-bold text-gray-900">{getTotalDuration()} minutes</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-purple-200 pt-4">
-                    <p className="text-sm font-semibold text-gray-900 mb-2">Services:</p>
-                    {getSelectedServicesDetails().map((service) => (
-                      <div key={service.id} className="flex justify-between text-sm text-gray-700">
-                        <span>{service.name}</span>
-                        <span className="font-bold">${service.price.toFixed(2)}</span>
-                      </div>
-                    ))}
-                    <div className="border-t border-purple-200 mt-2 pt-2 flex justify-between font-bold text-gray-900">
-                      <span>Total</span>
-                      <span>${getTotalPrice().toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Guest Details */}
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 rounded-lg p-6 space-y-4">
-                  <h3 className="font-bold text-gray-900">Your Information</h3>
-                  
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Name</p>
-                      <p className="font-bold text-gray-900">{guestFullName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Email</p>
-                      <p className="font-bold text-gray-900">{guestEmail}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Phone</p>
-                      <p className="font-bold text-gray-900">{guestPhone}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <p className="text-sm text-amber-800">
-                    ✓ A confirmation email will be sent to <strong>{guestEmail}</strong>
-                  </p>
-                </div>
-
-                <div className="flex gap-3 w-full">
-                  <button
-                    onClick={() => setStep(2)}
-                    className="w-[30%] bg-gray-300 text-gray-900 font-bold py-3 rounded-lg hover:bg-gray-400 transition-colors"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={handleBooking}
-                    disabled={isBooking}
-                    className="w-[70%] bg-[#35514e] text-white font-bold py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isBooking ? '⏳ Confirming...' : '✓ Confirm Booking'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Success */}
-            {step === 4 && (
               <div className="text-center space-y-8 py-12">
                 <div className="text-6xl">🎉</div>
                 <div>

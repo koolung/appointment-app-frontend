@@ -1,12 +1,14 @@
+import { ReactNode } from 'react';
+
 interface StatCardProps {
-  icon: string;
+  icon: ReactNode;
   label: string;
   value: string | number;
   trend?: {
     direction: 'up' | 'down';
     percentage: number;
   };
-  color: 'blue' | 'green' | 'purple' | 'orange';
+  color: 'blue' | 'green' | 'purple' | 'orange' | 'white' | 'black';
 }
 
 const colorClasses = {
@@ -14,6 +16,8 @@ const colorClasses = {
   green: 'bg-green-50 text-green-600 border-green-200',
   purple: 'bg-purple-50 text-purple-600 border-purple-200',
   orange: 'bg-orange-50 text-orange-600 border-orange-200',
+  black: 'bg-black text-white border-black',
+  white: 'bg-white text-black border-gray-200',
 };
 
 export default function StatCard({ icon, label, value, trend, color }: StatCardProps) {

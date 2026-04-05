@@ -77,42 +77,42 @@ export default function ReportsPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard
-            icon="💰"
+            icon={<i className="fi fi-rr-usd-circle"></i>}
             label="Total Revenue"
             value={`$${data.totalRevenue.toLocaleString()}`}
-            color="green"
+            color="white"
           />
           <StatCard
-            icon="📊"
+            icon={<i className="fi fi-rr-chart-line-up"></i>}
             label="This Month"
             value={`$${data.monthlyRevenue.toLocaleString()}`}
             trend={{ direction: 'up', percentage: 8 }}
-            color="green"
+            color="white"
           />
           <StatCard
-            icon="📅"
+            icon={<i className="fi fi-rr-calendar-day"></i>}
             label="Total Appointments"
             value={data.totalAppointments}
-            color="blue"
+            color="white"
           />
           <StatCard
-            icon="✅"
+            icon  ={<i className="fi fi-rr-check"></i>}
             label="Completed"
             value={data.completedAppointments}
             trend={{ direction: 'up', percentage: 5 }}
-            color="green"
+            color="white"
           />
           <StatCard
-            icon="❌"
+            icon={<i className="fi fi-rr-close"></i>}
             label="Cancelled"
             value={data.cancelledAppointments}
-            color="orange"
+            color="white"
           />
           <StatCard
-            icon="📈"
+            icon={<i className="fi fi-rr-chart-pie"></i>}
             label="Completion Rate"
             value={`${Math.round((data.completedAppointments / data.totalAppointments) * 100)}%`}
-            color="blue"
+            color="white"
           />
         </div>
 

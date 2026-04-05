@@ -85,43 +85,43 @@ export default function AdminDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard
-            icon="📅"
+            icon={<i className="fi fi-rr-calendar-day"></i>}
             label="Appointments Today"
             value={stats.appointmentsToday}
             trend={{ direction: 'up', percentage: 12 }}
-            color="blue"
+            color="white"
           />
           <StatCard
-            icon="👥"
+            icon={<i className="fi fi-rr-users-alt"></i>}
             label="Total Employees"
             value={stats.totalEmployees}
-            color="green"
+            color="white"
           />
           <StatCard
-            icon="✨"
+            icon={<i className="fi fi-rr-boxes"></i>}
             label="Total Services"
             value={stats.totalServices}
-            color="purple"
+            color="white"
           />
           <StatCard
-            icon="💰"
+            icon={<i className="fi fi-rr-usd-circle"></i>}
             label="Revenue This Month"
             value={`$${stats.revenueThisMonth.toLocaleString()}`}
             trend={{ direction: 'up', percentage: 8 }}
-            color="green"
+            color="white"
           />
           <StatCard
-            icon="📊"
+            icon={<i className="fi fi-br-stats"></i>}
             label="Total Revenue"
             value={`$${stats.revenue.toLocaleString()}`}
-            color="orange"
+            color="white"
           />
           <StatCard
-            icon="📈"
+            icon={<i className="fi fi-rr-chart-line-up"></i>}
             label="Month Appointments"
             value={stats.appointmentsThisMonth}
             trend={{ direction: 'up', percentage: 15 }}
-            color="blue"
+            color="white"
           />
         </div>
 
